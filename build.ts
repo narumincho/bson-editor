@@ -2,14 +2,8 @@ import { fromFileUrl } from "https://deno.land/std@0.195.0/path/posix.ts";
 import { denoPlugins } from "https://deno.land/x/esbuild_deno_loader@0.8.1/mod.ts";
 import { build as esBuild } from "https://deno.land/x/esbuild@v0.18.11/mod.js";
 import { ensureFile } from "https://deno.land/std@0.195.0/fs/mod.ts";
+import { viewType } from "./lib.ts";
 
-/**
- * ```bash
- * deno run -A ./build.ts
- * ```
- */
-
-/** */
 export const writeTextFileWithLog = async (
   path: URL,
   content: string
@@ -58,9 +52,9 @@ writeTextFileWithLog(
 writeTextFileWithLog(
   new URL("./package.json", distributionPath),
   JSON.stringify({
-    name: "bson-editor",
+    name: "bson editor",
     version: "0.0.1",
-    description: "bson-editor VSCode extension",
+    description: "bson editor VSCode extension",
     repository: {
       url: "git+https://github.com/narumincho/bson-editor.git",
       type: "git",
@@ -73,11 +67,20 @@ writeTextFileWithLog(
     },
     dependencies: {},
     activationEvents: [],
+    /**
+     * https://code.visualstudio.com/api/references/contribution-points
+     */
     contributes: {
-      commands: [
+      customEditors: [
         {
-          command: "extension.helloWorld",
-          title: "Hello World",
+          viewType,
+          displayName: "bson editor",
+          selector: [
+            {
+              filenamePattern: "*.bson",
+            },
+          ],
+          priority: "default",
         },
       ],
     },

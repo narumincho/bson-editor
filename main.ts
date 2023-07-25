@@ -2,6 +2,7 @@ import {
   ExtensionContext,
   importVsCodeApi,
 } from "https://deno.land/x/vscode@1.80.0/mod.ts";
+import { viewType } from "./lib.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
@@ -11,16 +12,9 @@ export function activate(context: ExtensionContext) {
     );
   }
 
-  console.log(
-    'Congratulations, your extension "helloworld-sample" is now active!'
+  context.subscriptions.push(
+    vscode.window.registerCustomEditorProvider(viewType, {
+      openCustomDocument: async (uri) => {},
+    })
   );
-
-  const disposable = vscode.commands.registerCommand(
-    "extension.helloWorld",
-    () => {
-      vscode.window.showInformationMessage("Hello World!");
-    }
-  );
-
-  context.subscriptions.push(disposable);
 }
