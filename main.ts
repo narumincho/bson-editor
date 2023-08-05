@@ -4,36 +4,40 @@ import {
   CustomDocumentBackup,
   CustomDocumentBackupContext,
   CustomDocumentContentChangeEvent,
-  CustomDocumentEditEvent,
   CustomDocumentOpenContext,
   CustomEditorProvider,
-  Event,
   ExtensionContext,
-  TextDocument,
-  Thenable,
+  importVsCodeApi,
   Uri,
   WebviewPanel,
-  importVsCodeApi,
-} from "https://deno.land/x/vscode@1.80.0/mod.ts";
+} from "https://deno.land/x/vscode@1.81.0/mod.ts";
 import { viewType } from "./lib.ts";
+import {
+  bsonBinaryToStructuredBson,
+  DeserializeResult,
+  StructuredBson,
+  StructuredBsonArray,
+} from "./bson.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
   if (vscode === undefined) {
     throw new Error(
-      "Could not import vscode api because it was not working within the extension"
+      "Could not import vscode api because it was not working within the extension",
     );
   }
 
   const eventEmitter = new vscode.EventEmitter<
-    CustomDocumentContentChangeEvent<CustomDocument>
+    CustomDocumentContentChangeEvent<BsonDocument>
   >();
-
-  const customEditorProvider: CustomEditorProvider<CustomDocument> = {
+  /**
+   * https://code.visualstudio.com/api/extension-guides/custom-editors
+   */
+  const customEditorProvider: CustomEditorProvider<BsonDocument> = {
     backupCustomDocument: async (
-      document: CustomDocument,
+      document: BsonDocument,
       context: CustomDocumentBackupContext,
-      cancellation: CancellationToken
+      cancellation: CancellationToken,
     ): Promise<CustomDocumentBackup> => {
       return {
         id: document.uri.toString(),
@@ -44,23 +48,25 @@ export function activate(context: ExtensionContext) {
     openCustomDocument: async (
       uri: Uri,
       openContext: CustomDocumentOpenContext,
-      token: CancellationToken
-    ): Promise<CustomDocument> => {
+      token: CancellationToken,
+    ): Promise<BsonDocument> => {
       return {
         uri,
+        data: bsonBinaryToStructuredBson(
+          await vscode.workspace.fs.readFile(uri),
+        ),
         dispose: () => {},
       };
     },
     resolveCustomEditor: async (
-      document: CustomDocument,
+      document: BsonDocument,
       webviewPanel: WebviewPanel,
-      token: CancellationToken
+      token: CancellationToken,
     ): Promise<void> => {
       webviewPanel.webview.options = {
         enableScripts: true,
       };
       webviewPanel.webview.html = `<!DOCTYPE html>
-<html lang="ja">
 <html lang="ja">
 
 <head>
@@ -69,28 +75,32 @@ export function activate(context: ExtensionContext) {
 </head>
 <body>
   <h1>Bson Editor</h1>
+  <div>${JSON.stringify(document.data)}</div>
 </body>
-
 </html>
 `;
     },
     saveCustomDocument: async (
-      document: CustomDocument,
-      cancellation: CancellationToken
+      document: BsonDocument,
+      cancellation: CancellationToken,
     ): Promise<void> => {},
     saveCustomDocumentAs: async (
-      document: CustomDocument,
+      document: BsonDocument,
       destination: Uri,
-      cancellation: CancellationToken
+      cancellation: CancellationToken,
     ): Promise<void> => {},
     revertCustomDocument: async (
-      document: CustomDocument,
-      cancellation: CancellationToken
+      document: BsonDocument,
+      cancellation: CancellationToken,
     ): Promise<void> => {},
   };
   const provider = vscode.window.registerCustomEditorProvider(
     viewType,
-    customEditorProvider
+    customEditorProvider,
   );
   context.subscriptions.push(provider);
 }
+
+type BsonDocument = CustomDocument & {
+  data: DeserializeResult<StructuredBsonArray>;
+};
