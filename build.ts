@@ -1,7 +1,7 @@
-import { fromFileUrl } from "https://deno.land/std@0.197.0/path/posix.ts";
+import { fromFileUrl } from "https://deno.land/std@0.198.0/path/posix.ts";
 import { denoPlugins } from "https://deno.land/x/esbuild_deno_loader@0.8.1/mod.ts";
-import { build as esBuild } from "https://deno.land/x/esbuild@v0.18.11/mod.js";
-import { ensureFile } from "https://deno.land/std@0.197.0/fs/mod.ts";
+import { build as esBuild } from "https://deno.land/x/esbuild@v0.19.2/mod.js";
+import { ensureFile } from "https://deno.land/std@0.198.0/fs/mod.ts";
 import { viewType } from "./lib.ts";
 
 export const writeTextFileWithLog = async (
@@ -50,7 +50,7 @@ writeTextFileWithLog(
 );
 
 writeTextFileWithLog(
-  new URL("client", distributionPath),
+  new URL("client.js", distributionPath),
   await build(new URL("./client.ts", import.meta.url)),
 );
 

@@ -5,7 +5,7 @@ import {
 import {
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.197.0/testing/asserts.ts";
+} from "https://deno.land/std@0.198.0/testing/asserts.ts";
 
 Deno.test("setLocalOffsetAndLengthDataView ok", () => {
   const dataView = new DataView(new Uint8Array(10).buffer);
