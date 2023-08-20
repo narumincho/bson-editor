@@ -1,6 +1,8 @@
 import {
   createOutOfRangeErrorMessage,
+  ReadonlyDataView,
   setLocalOffsetAndLengthDataView,
+  toReadonlyDataView,
 } from "./dataView.ts";
 import {
   assertEquals,
@@ -9,7 +11,11 @@ import {
 
 Deno.test("setLocalOffsetAndLengthDataView ok", () => {
   const dataView = new DataView(new Uint8Array(10).buffer);
-  const result = setLocalOffsetAndLengthDataView(dataView, 3, 4);
+  const result = setLocalOffsetAndLengthDataView(
+    toReadonlyDataView(dataView),
+    3,
+    4,
+  );
   // **********
   // ---****---
   // ---****---
@@ -21,7 +27,11 @@ Deno.test("setLocalOffsetAndLengthDataView ok", () => {
 
 Deno.test("setLocalOffsetAndLengthDataView inside", () => {
   const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  const result = setLocalOffsetAndLengthDataView(dataView, 3, 4);
+  const result = setLocalOffsetAndLengthDataView(
+    toReadonlyDataView(dataView),
+    3,
+    4,
+  );
   // -********-
   // ----****--
   // ----****--
@@ -33,7 +43,11 @@ Deno.test("setLocalOffsetAndLengthDataView inside", () => {
 
 Deno.test("setLocalOffsetAndLengthDataView no change", () => {
   const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  const result = setLocalOffsetAndLengthDataView(dataView, 0, 8);
+  const result = setLocalOffsetAndLengthDataView(
+    toReadonlyDataView(dataView),
+    0,
+    8,
+  );
   // -********-
   // -********-
   // -********-
@@ -49,7 +63,7 @@ Deno.test("setLocalOffsetAndLengthDataView left over", () => {
   // *****-----
   // -****-----
   assertThrows(
-    () => setLocalOffsetAndLengthDataView(dataView, -1, 5),
+    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), -1, 5),
     RangeError,
     createOutOfRangeErrorMessage({
       rawNewLeft: 0,
@@ -66,7 +80,7 @@ Deno.test("setLocalOffsetAndLengthDataView right over", () => {
   // -----*****
   // -----****-
   assertThrows(
-    () => setLocalOffsetAndLengthDataView(dataView, 4, 5),
+    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), 4, 5),
     RangeError,
     createOutOfRangeErrorMessage({
       rawNewLeft: 5,
@@ -83,7 +97,7 @@ Deno.test("setLocalOffsetAndLengthDataView flip", () => {
   // --!|-------
   // ---|-------
   assertThrows(
-    () => setLocalOffsetAndLengthDataView(dataView, 2, -1),
+    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), 2, -1),
     RangeError,
     createOutOfRangeErrorMessage({
       rawNewLeft: 3,
@@ -94,10 +108,10 @@ Deno.test("setLocalOffsetAndLengthDataView flip", () => {
   );
 });
 
-const toCompareObject = (result: DataView): {
+const toCompareObject = (result: ReadonlyDataView): {
   readonly offset: number;
   readonly length: number;
 } => ({
-  offset: result.byteOffset,
-  length: result.byteLength,
+  offset: result.__dataView.byteOffset,
+  length: result.__dataView.byteLength,
 });

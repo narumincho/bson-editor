@@ -13,22 +13,6 @@ import {
 } from "./dataView.ts";
 import { WithLocation } from "./location.ts";
 
-export type SizeTooSmallError = {
-  readonly type: "sizeTooSmall";
-  readonly size: number;
-  readonly min: number;
-};
-
-export type ErrorAtSize = {
-  readonly type: "cannotReadSize";
-} | {
-  readonly type: "lessThanOrEqualZero";
-};
-
-export type NotFoundEndOfFlagError = {
-  readonly index: number;
-};
-
 export type ElementValueWithInvalid =
   | { readonly type: "double"; readonly value: number }
   | { readonly type: "string"; readonly value: StringWithInvalid }
