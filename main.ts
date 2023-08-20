@@ -65,16 +65,21 @@ export function activate(context: ExtensionContext) {
       webviewPanel.webview.options = {
         enableScripts: true,
       };
+      const scriptUri = webviewPanel.webview.asWebviewUri(vscode.Uri.joinPath(
+        context.extensionUri,
+        "client.js",
+      ));
       webviewPanel.webview.html = `<!DOCTYPE html>
 <html lang="ja">
 
 <head>
   <meta charset="UTF-8">
   <title>Bson Editor</title>
+  <script type="module" src="${scriptUri}"></script>
 </head>
 <body>
   <h1>Bson Editor</h1>
-  <div>${JSON.stringify(document.data)}</div>
+  <div>...</div>
 </body>
 </html>
 `;

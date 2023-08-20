@@ -3,7 +3,7 @@
 run build script
 
 ```sh
-deno run -A ./build.ts
+deno run -A ./buildForVSCodeExtension.ts
 ```
 
 run example bson file generator

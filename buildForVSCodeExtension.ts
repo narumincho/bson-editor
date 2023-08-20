@@ -19,13 +19,13 @@ const distributionPath = new URL(
   import.meta.url,
 );
 
-const build = async (url: URL): Promise<string> => {
+const build = async (url: URL, format: "cjs" | "esm"): Promise<string> => {
   const esbuildResult = await esBuild({
     entryPoints: [fromFileUrl(url)],
     plugins: denoPlugins(),
     write: false,
     bundle: true,
-    format: "esm",
+    format,
     target: ["node18", "chrome115"],
   });
 
@@ -46,12 +46,12 @@ const scriptRelativePath = "./main.js";
 
 writeTextFileWithLog(
   new URL(scriptRelativePath, distributionPath),
-  await build(new URL("./main.ts", import.meta.url)),
+  await build(new URL("./main.ts", import.meta.url), "cjs"),
 );
 
 writeTextFileWithLog(
   new URL("client.js", distributionPath),
-  await build(new URL("./client.ts", import.meta.url)),
+  await build(new URL("./client/main.tsx", import.meta.url), "esm"),
 );
 
 writeTextFileWithLog(
