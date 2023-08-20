@@ -15,7 +15,7 @@ deno run --check -A ./server/build.ts
 run server
 
 ```sh
-deno run --check -A ./server/main.ts
+deno run --check --watch -A ./server/main.ts
 ```
 
 run example bson file generator

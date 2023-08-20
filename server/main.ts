@@ -14,10 +14,14 @@ Deno.serve((request) => {
     <meta charset="UTF-8">
     <title>Bson Editor</title>
     <script type="module" src="/${dist.scriptHash}"></script>
+    <style>
+        :root {
+          color-scheme: dark;
+        }
+    </style>
 </head>
 <body>
-    <h1>Bson Editor</h1>
-    <div>loading</div>
+    <div id="loading">Bson Editor loading</div>
 </body>
 
 </html>
@@ -27,7 +31,7 @@ Deno.serve((request) => {
             "content-type": "text/html",
             "cache-control": "public, max-age=10",
           },
-        },
+        }
       );
     case `/${dist.scriptHash}`:
       return new Response(dist.scriptContent, {
