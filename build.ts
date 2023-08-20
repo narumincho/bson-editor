@@ -6,7 +6,7 @@ import { viewType } from "./lib.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
-  content: string
+  content: string,
 ): Promise<void> => {
   console.log(path.toString() + " に書き込み中... " + content.length + "文字");
   await ensureFile(path);
@@ -16,24 +16,24 @@ export const writeTextFileWithLog = async (
 
 const distributionPath = new URL(
   "./vscodeExtensionDistribution/",
-  import.meta.url
+  import.meta.url,
 );
 
-const build = async (): Promise<string> => {
+const build = async (url: URL): Promise<string> => {
   const esbuildResult = await esBuild({
-    entryPoints: [fromFileUrl(new URL("./main.ts", import.meta.url))],
+    entryPoints: [fromFileUrl(url)],
     plugins: denoPlugins(),
     write: false,
     bundle: true,
-    format: "cjs",
-    target: ["node18"],
+    format: "esm",
+    target: ["node18", "chrome115"],
   });
 
   for (const esbuildResultFile of esbuildResult.outputFiles ?? []) {
     if (esbuildResultFile.path === "<stdout>") {
       console.log("js 発見");
       const scriptContent = new TextDecoder().decode(
-        esbuildResultFile.contents
+        esbuildResultFile.contents,
       );
 
       return scriptContent;
@@ -46,7 +46,12 @@ const scriptRelativePath = "./main.js";
 
 writeTextFileWithLog(
   new URL(scriptRelativePath, distributionPath),
-  await build()
+  await build(new URL("./main.ts", import.meta.url)),
+);
+
+writeTextFileWithLog(
+  new URL("client", distributionPath),
+  await build(new URL("./client.ts", import.meta.url)),
 );
 
 writeTextFileWithLog(
@@ -86,11 +91,11 @@ writeTextFileWithLog(
     },
     browser: scriptRelativePath,
     publisher: "narumincho",
-  })
+  }),
 );
 
 writeTextFileWithLog(
   new URL("README.md", distributionPath),
   `bson-editor VSCode extension
-`
+`,
 );

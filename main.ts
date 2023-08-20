@@ -12,7 +12,7 @@ import {
   WebviewPanel,
 } from "https://deno.land/x/vscode@1.81.0/mod.ts";
 import { viewType } from "./lib.ts";
-import { bsonBinaryToStructuredBson } from "./bson.ts";
+import { bsonBinaryToStructuredBson } from "./bson/main.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
@@ -115,6 +115,6 @@ export function activate(context: ExtensionContext) {
 }
 
 type DocumentWithInvalid = CustomDocument & {
-  data: DeserializeResult<DocumentWithInvalid>;
+  data: DocumentWithInvalid;
   originalBinary: Uint8Array;
 };
