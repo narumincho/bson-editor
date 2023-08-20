@@ -1,13 +1,25 @@
 # bson-editor
 
-run build script
+run vscodeExtension build script
 
 ```sh
-deno run -A ./buildForVSCodeExtension.ts
+deno run --check -A ./vscodeExtension/build.ts
+```
+
+run server build script
+
+```sh
+deno run --check -A ./server/build.ts
+```
+
+run server
+
+```sh
+deno run --check -A ./server/main.ts
 ```
 
 run example bson file generator
 
 ```sh
-deno run --allow-write=./example/ ./example/generate.ts
+deno run --check --allow-write=./example/ ./example/generate.ts
 ```

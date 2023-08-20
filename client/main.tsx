@@ -4,8 +4,8 @@ import React from "https://esm.sh/react@18.2.0?pin=v130";
 import { createRoot } from "https://esm.sh/react-dom@18.2.0/client?pin=v130";
 import { jsx } from "https://esm.sh/@emotion/react@11.11.1?pin=v130";
 
-if (!window.acquireVsCodeApi) {
-  const vscode = acquireVsCodeApi();
+if (typeof window.acquireVsCodeApi === "function") {
+  const vscode = window.acquireVsCodeApi();
   console.log(vscode);
 }
 

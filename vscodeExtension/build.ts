@@ -1,6 +1,9 @@
 import { fromFileUrl } from "https://deno.land/std@0.198.0/path/posix.ts";
 import { denoPlugins } from "https://deno.land/x/esbuild_deno_loader@0.8.1/mod.ts";
-import { build as esBuild } from "https://deno.land/x/esbuild@v0.19.2/mod.js";
+import {
+  build as esBuild,
+  type Plugin,
+} from "https://deno.land/x/esbuild@v0.19.2/mod.js";
 import { ensureFile } from "https://deno.land/std@0.198.0/fs/mod.ts";
 import { viewType } from "./lib.ts";
 
@@ -15,14 +18,14 @@ export const writeTextFileWithLog = async (
 };
 
 const distributionPath = new URL(
-  "./vscodeExtensionDistribution/",
+  "../vscodeExtensionDistribution/",
   import.meta.url,
 );
 
 const build = async (url: URL, format: "cjs" | "esm"): Promise<string> => {
   const esbuildResult = await esBuild({
     entryPoints: [fromFileUrl(url)],
-    plugins: denoPlugins(),
+    plugins: denoPlugins() as Plugin[],
     write: false,
     bundle: true,
     format,
@@ -51,7 +54,7 @@ writeTextFileWithLog(
 
 writeTextFileWithLog(
   new URL("client.js", distributionPath),
-  await build(new URL("./client/main.tsx", import.meta.url), "esm"),
+  await build(new URL("../client/main.tsx", import.meta.url), "esm"),
 );
 
 writeTextFileWithLog(

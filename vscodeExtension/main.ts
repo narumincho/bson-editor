@@ -12,7 +12,6 @@ import {
   WebviewPanel,
 } from "https://deno.land/x/vscode@1.81.0/mod.ts";
 import { viewType } from "./lib.ts";
-import { bsonBinaryToStructuredBson } from "./bson/main.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
@@ -23,15 +22,15 @@ export function activate(context: ExtensionContext) {
   }
 
   const eventEmitter = new vscode.EventEmitter<
-    CustomDocumentContentChangeEvent<DocumentWithInvalid>
+    CustomDocumentContentChangeEvent<BsonEditorDocument>
   >();
   /**
    * https://code.visualstudio.com/api/extension-guides/custom-editors
    */
-  const customEditorProvider: CustomEditorProvider<DocumentWithInvalid> = {
+  const customEditorProvider: CustomEditorProvider<BsonEditorDocument> = {
     // deno-lint-ignore require-await
     backupCustomDocument: async (
-      document: DocumentWithInvalid,
+      document: BsonEditorDocument,
       _context: CustomDocumentBackupContext,
       _cancellation: CancellationToken,
     ): Promise<CustomDocumentBackup> => {
@@ -45,20 +44,17 @@ export function activate(context: ExtensionContext) {
       uri: Uri,
       _openContext: CustomDocumentOpenContext,
       _token: CancellationToken,
-    ): Promise<DocumentWithInvalid> => {
+    ): Promise<BsonEditorDocument> => {
       const file = await vscode.workspace.fs.readFile(uri);
       return {
         uri,
-        data: bsonBinaryToStructuredBson(
-          file,
-        ),
         originalBinary: file,
         dispose: () => {},
       };
     },
     // deno-lint-ignore require-await
     resolveCustomEditor: async (
-      document: DocumentWithInvalid,
+      _document: BsonEditorDocument,
       webviewPanel: WebviewPanel,
       _token: CancellationToken,
     ): Promise<void> => {
@@ -69,7 +65,7 @@ export function activate(context: ExtensionContext) {
         context.extensionUri,
         "client.js",
       ));
-      webviewPanel.webview.html = `<!DOCTYPE html>
+      webviewPanel.webview.html = `<!doctype html>
 <html lang="ja">
 
 <head>
@@ -81,11 +77,10 @@ export function activate(context: ExtensionContext) {
   <h1>Bson Editor</h1>
   <div>...</div>
 </body>
-</html>
-`;
+</html>`;
     },
     saveCustomDocument: async (
-      document: DocumentWithInvalid,
+      document: BsonEditorDocument,
       _cancellation: CancellationToken,
     ): Promise<void> => {
       await vscode.workspace.fs.writeFile(
@@ -94,7 +89,7 @@ export function activate(context: ExtensionContext) {
       );
     },
     saveCustomDocumentAs: async (
-      document: DocumentWithInvalid,
+      document: BsonEditorDocument,
       destination: Uri,
       _cancellation: CancellationToken,
     ): Promise<void> => {
@@ -104,12 +99,11 @@ export function activate(context: ExtensionContext) {
       );
     },
     revertCustomDocument: async (
-      document: DocumentWithInvalid,
+      document: BsonEditorDocument,
       _cancellation: CancellationToken,
     ): Promise<void> => {
       const file = await vscode.workspace.fs.readFile(document.uri);
       document.originalBinary = file;
-      document.data = bsonBinaryToStructuredBson(file);
     },
   };
   const provider = vscode.window.registerCustomEditorProvider(
@@ -119,7 +113,6 @@ export function activate(context: ExtensionContext) {
   context.subscriptions.push(provider);
 }
 
-type DocumentWithInvalid = CustomDocument & {
-  data: DocumentWithInvalid;
+export type BsonEditorDocument = CustomDocument & {
   originalBinary: Uint8Array;
 };
