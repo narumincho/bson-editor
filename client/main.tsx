@@ -3,6 +3,10 @@ import type { WebviewApi } from "npm:@types/vscode-webview@1.57.1";
 import React from "https://esm.sh/react@18.2.0?pin=v130";
 import { createRoot } from "https://esm.sh/react-dom@18.2.0/client?pin=v130";
 import { jsx } from "https://esm.sh/@emotion/react@11.11.1?pin=v130";
+import {
+  bsonBinaryToStructuredBson,
+  DocumentWithInvalid,
+} from "../bson/main.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof window.acquireVsCodeApi === "function") {
@@ -20,6 +24,11 @@ document.body.appendChild(rootElement);
 const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [structuredBson, setStructuredBson] = React.useState<
+    DocumentWithInvalid | undefined
+  >(undefined);
+
   return (
     <div>
       {vscodeWebviewApi === undefined
@@ -28,10 +37,24 @@ const App = (): React.ReactElement => {
       <div>普通にWebサイトでも動作するBsonエディターを作りたい</div>
       <input
         type="file"
+        disabled={isLoading}
         onChange={(e) => {
           console.log(e);
+          setIsLoading(true);
+          e.target.files?.[0]?.arrayBuffer().then((binary) => {
+            setIsLoading(false);
+            const structuredBson = bsonBinaryToStructuredBson(
+              new Uint8Array(binary),
+            );
+            console.log(structuredBson);
+            setStructuredBson(structuredBson);
+          });
         }}
       />
+      {isLoading ? <div>読み込み中</div> : undefined}
+      {structuredBson === undefined
+        ? undefined
+        : <code>{JSON.stringify(structuredBson, null, 2)}</code>}
     </div>
   );
 };
