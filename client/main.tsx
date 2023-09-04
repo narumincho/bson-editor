@@ -1,12 +1,11 @@
-/** @jsx jsx */
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.1";
-import React from "https://esm.sh/react@18.2.0?pin=v130";
-import { createRoot } from "https://esm.sh/react-dom@18.2.0/client?pin=v130";
-import { jsx } from "https://esm.sh/@emotion/react@11.11.1?pin=v130";
+import React from "https://esm.sh/react@18.2.0?pin=v132";
+import { createRoot } from "https://esm.sh/react-dom@18.2.0/client?pin=v132";
 import {
   bsonBinaryToStructuredBson,
   DocumentWithInvalid,
 } from "../bson/main.ts";
+import { WithLocation } from "../bson/location.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof window.acquireVsCodeApi === "function") {
@@ -26,7 +25,7 @@ const root = createRoot(rootElement);
 const App = (): React.ReactElement => {
   const [isLoading, setIsLoading] = React.useState(false);
   const [structuredBson, setStructuredBson] = React.useState<
-    DocumentWithInvalid | undefined
+    WithLocation<DocumentWithInvalid> | undefined
   >(undefined);
 
   return (

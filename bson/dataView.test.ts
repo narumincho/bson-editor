@@ -10,14 +10,14 @@ import {
 import {
   assertEquals,
   assertThrows,
-} from "https://deno.land/std@0.198.0/testing/asserts.ts";
+} from "https://deno.land/std@0.201.0/testing/asserts.ts";
 
 Deno.test("setLocalOffsetAndLengthDataView ok", () => {
   const dataView = new DataView(new Uint8Array(10).buffer);
   const result = setLocalOffsetAndLengthDataView(
     toReadonlyDataView(dataView),
     3,
-    4
+    4,
   );
   // **********
   // ---****---
@@ -33,7 +33,7 @@ Deno.test("setLocalOffsetAndLengthDataView inside", () => {
   const result = setLocalOffsetAndLengthDataView(
     toReadonlyDataView(dataView),
     3,
-    4
+    4,
   );
   // -********-
   // ----****--
@@ -49,7 +49,7 @@ Deno.test("setLocalOffsetAndLengthDataView no change", () => {
   const result = setLocalOffsetAndLengthDataView(
     toReadonlyDataView(dataView),
     0,
-    8
+    8,
   );
   // -********-
   // -********-
@@ -73,7 +73,7 @@ Deno.test("setLocalOffsetAndLengthDataView left over", () => {
       rawNewRight: 5,
       oldLeft: 1,
       oldRight: 9,
-    })
+    }),
   );
 });
 
@@ -90,7 +90,7 @@ Deno.test("setLocalOffsetAndLengthDataView right over", () => {
       rawNewRight: 10,
       oldLeft: 1,
       oldRight: 9,
-    })
+    }),
   );
 });
 
@@ -107,12 +107,12 @@ Deno.test("setLocalOffsetAndLengthDataView flip", () => {
       rawNewRight: 2,
       oldLeft: 1,
       oldRight: 9,
-    })
+    }),
   );
 });
 
 const toCompareObject = (
-  result: ReadonlyDataView
+  result: ReadonlyDataView,
 ): {
   readonly offset: number;
   readonly length: number;
@@ -123,7 +123,7 @@ const toCompareObject = (
 
 Deno.test("getUint8 ok", () => {
   const dataView = toReadonlyDataView(
-    new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3)
+    new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3),
   );
   const result = getUint8(dataView);
   assertEquals(result.withLocationValue, {
@@ -141,7 +141,7 @@ Deno.test("getUint8 ok", () => {
 
 Deno.test("getInt32 ok", () => {
   const dataView = toReadonlyDataView(
-    new DataView(new Uint8Array([0, 0, 0, 0, 3, 5, 6]).buffer, 1, 6)
+    new DataView(new Uint8Array([0, 0, 0, 0, 3, 5, 6]).buffer, 1, 6),
   );
   const result = getInt32(dataView);
   assertEquals(result.withLocationValue, {
@@ -159,7 +159,7 @@ Deno.test("getInt32 ok", () => {
 
 Deno.test("getString", () => {
   const dataView = toReadonlyDataView(
-    new DataView(new TextEncoder().encode("サンプルテキスト").buffer)
+    new DataView(new TextEncoder().encode("サンプルテキスト").buffer),
   );
   const result = getString(dataView);
   assertEquals(result, {
