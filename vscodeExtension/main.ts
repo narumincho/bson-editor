@@ -10,7 +10,7 @@ import {
   importVsCodeApi,
   Uri,
   WebviewPanel,
-} from "https://deno.land/x/vscode@1.81.0/mod.ts";
+} from "https://deno.land/x/vscode@1.87.0/mod.ts";
 import { viewType } from "./lib.ts";
 
 export function activate(context: ExtensionContext) {
