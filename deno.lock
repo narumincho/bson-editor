@@ -60,6 +60,8 @@
     }
   },
   "redirects": {
+    "https://deno.land/x/web_bson": "https://deno.land/x/web_bson@v0.3.0",
+    "https://deno.land/x/web_bson/mod.js": "https://deno.land/x/web_bson@v0.3.0/mod.js",
     "https://esm.sh/v128/@types/react@~18.2/index.d.ts": "https://esm.sh/v128/@types/react@18.2.38/index.d.ts",
     "https://esm.sh/v128/@types/react@~18.3/index.d.ts": "https://esm.sh/v128/@types/react@18.2.38/index.d.ts",
     "https://esm.sh/v132/@types/react-dom@~18.2/client~.d.ts": "https://esm.sh/v132/@types/react-dom@18.2.25/client~.d.ts",
@@ -408,6 +410,7 @@
     "https://deno.land/x/mongo@v0.33.0/src/utils/uri.ts": "dcfab8e1dcfcc875c75ada1d9f366664480c03b65594990d6342ed88925452e5",
     "https://deno.land/x/wasmbuild@0.14.1/cache.ts": "89eea5f3ce6035a1164b3e655c95f21300498920575ade23161421f5b01967f4",
     "https://deno.land/x/wasmbuild@0.14.1/loader.ts": "d98d195a715f823151cbc8baa3f32127337628379a02d9eb2a3c5902dbccfc02",
+    "https://deno.land/x/web_bson@v0.3.0/mod.js": "8e14aecd31ee63abd30e2dbaa284b4b67abb7ba51fcef5b96af74727cb7c7940",
     "https://esm.sh/react-dom@18.2.0/client?pin=v132": "86044c4b602dfd078eedf7af27df18fce7d304bf9948d6e0f2795057f6669348",
     "https://esm.sh/react-dom@18.3.1/client?pin=v135": "3e23a449c16029111f8fa64809dd83ea5f896a4065f956b6b6d87998854efa1e",
     "https://esm.sh/react@18.2.0?pin=v132": "04ad7dc6d11fa27b24c136686a334ecdd19e972fae627cd98cbdc13cdac238c2",

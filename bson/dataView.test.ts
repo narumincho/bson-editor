@@ -7,10 +7,7 @@ import {
   setLocalOffsetAndLengthDataView,
   toReadonlyDataView,
 } from "./dataView.ts";
-import {
-  assertEquals,
-  assertThrows,
-} from "https://deno.land/std@0.201.0/testing/asserts.ts";
+import { assertEquals, assertThrows } from "jsr:@std/assert";
 
 Deno.test("setLocalOffsetAndLengthDataView ok", () => {
   const dataView = new DataView(new Uint8Array(10).buffer);
@@ -141,7 +138,7 @@ Deno.test("getUint8 ok", () => {
 
 Deno.test("getInt32 ok", () => {
   const dataView = toReadonlyDataView(
-    new DataView(new Uint8Array([0, 0, 0, 0, 3, 5, 6]).buffer, 1, 6),
+    new DataView(new Uint8Array([0, 3, 2, 1, 0, 1, 6]).buffer, 1, 6),
   );
   const result = getInt32(dataView);
   assertEquals(result.withLocationValue, {
@@ -149,7 +146,7 @@ Deno.test("getInt32 ok", () => {
       startIndex: 1,
       endIndex: 5,
     },
-    value: 3,
+    value: 3 + 2 * 256 + 1 * 256 * 256,
   });
   assertEquals(toCompareObject(result.next), {
     offset: 5,
