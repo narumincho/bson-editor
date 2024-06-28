@@ -1,14 +1,16 @@
 import { Location, WithLocation } from "./location.ts";
 
+const readonlyDataViewSymbolBland = Symbol("readonlyDataViewSymbolBland");
+
 export type ReadonlyDataView = {
   readonly __dataView: DataView;
-  __readonlyDataViewSymbolBland: never;
+  __readonlyDataViewSymbolBland: typeof readonlyDataViewSymbolBland;
 };
 
 export const toReadonlyDataView = (dataView: DataView): ReadonlyDataView => {
   return {
     __dataView: dataView,
-    __readonlyDataViewSymbolBland: undefined as never,
+    __readonlyDataViewSymbolBland: readonlyDataViewSymbolBland,
   };
 };
 
@@ -24,7 +26,8 @@ export const createOutOfRangeErrorMessage = (parameter: {
   readonly rawNewRight: number;
 }): string => {
   const { oldLeft, oldRight, rawNewLeft, rawNewRight } = parameter;
-  const message = `Out of range: oldLeft=${oldLeft}, oldRight=${oldRight}, rawNewLeft=${rawNewLeft}, rawNewRight=${rawNewRight}`;
+  const message =
+    `Out of range: oldLeft=${oldLeft}, oldRight=${oldRight}, rawNewLeft=${rawNewLeft}, rawNewRight=${rawNewRight}`;
   return message;
 };
 
@@ -40,11 +43,11 @@ export const createOutOfRangeErrorMessage = (parameter: {
 export const setLocalOffsetAndLengthDataView = (
   dataView: ReadonlyDataView,
   localOffset: number,
-  length: number
+  length: number,
 ): ReadonlyDataView => {
   const oldLeft = dataView.__dataView.byteOffset;
-  const oldRight =
-    dataView.__dataView.byteOffset + dataView.__dataView.byteLength;
+  const oldRight = dataView.__dataView.byteOffset +
+    dataView.__dataView.byteLength;
   const rawNewLeft = oldLeft + localOffset;
   const rawNewRight = rawNewLeft + length;
   const newLeft = Math.min(Math.max(oldLeft, rawNewLeft), oldRight);
@@ -57,22 +60,22 @@ export const setLocalOffsetAndLengthDataView = (
         oldRight,
         rawNewLeft,
         rawNewRight,
-      })
+      }),
     );
   }
   return toReadonlyDataView(
-    new DataView(dataView.__dataView.buffer, newLeft, newRight - newLeft)
+    new DataView(dataView.__dataView.buffer, newLeft, newRight - newLeft),
   );
 };
 
 export const setLocalOffsetDataView = (
   dataView: ReadonlyDataView,
-  localOffset: number
+  localOffset: number,
 ): ReadonlyDataView => {
   return setLocalOffsetAndLengthDataView(
     dataView,
     localOffset,
-    dataView.__dataView.byteLength - localOffset
+    dataView.__dataView.byteLength - localOffset,
   );
 };
 
@@ -87,7 +90,7 @@ export const getLocation = (dataView: ReadonlyDataView): Location => {
  * 1byte の Uint8 を取得する
  */
 export const getUint8 = (
-  dataView: ReadonlyDataView
+  dataView: ReadonlyDataView,
 ): WithLocationAndNext<number> => {
   const value = dataView.__dataView.getUint8(0);
   return {
@@ -106,7 +109,7 @@ export const getUint8 = (
  * 4byte の Int32 を取得する
  */
 export const getInt32 = (
-  dataView: ReadonlyDataView
+  dataView: ReadonlyDataView,
 ): WithLocationAndNext<number> => {
   const value = dataView.__dataView.getInt32(0, true);
   return {
@@ -125,7 +128,7 @@ export const getInt32 = (
  * 8byte の Float64 を取得する
  */
 export const getFloat64 = (
-  dataView: ReadonlyDataView
+  dataView: ReadonlyDataView,
 ): WithLocationAndNext<number> => {
   const value = dataView.__dataView.getFloat64(0, true);
   return {
@@ -142,12 +145,12 @@ export const getFloat64 = (
 
 export const indexOf = (
   dataView: ReadonlyDataView,
-  value: number
+  value: number,
 ): number | undefined => {
   const binary = new Uint8Array(
     dataView.__dataView.buffer,
     dataView.__dataView.byteOffset,
-    dataView.__dataView.byteLength
+    dataView.__dataView.byteLength,
   );
   const localIndex = binary.indexOf(value);
   if (localIndex === -1) {
@@ -160,7 +163,7 @@ export const indexOf = (
  * 全てのバイトを文字列として取得する
  */
 export const getString = (
-  dataView: ReadonlyDataView
+  dataView: ReadonlyDataView,
 ): WithLocation<{
   readonly value: string;
   readonly originalIfInvalidUtf8Error: Uint8Array | undefined;
@@ -168,7 +171,7 @@ export const getString = (
   const sliced = new Uint8Array(
     dataView.__dataView.buffer,
     dataView.__dataView.byteOffset,
-    dataView.__dataView.byteLength
+    dataView.__dataView.byteLength,
   );
   try {
     return {

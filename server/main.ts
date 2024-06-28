@@ -1,4 +1,4 @@
-import dist from "./dist.json" assert { type: "json" };
+import dist from "./dist.json" with { type: "json" };
 
 Deno.serve((request) => {
   console.log(request.method, request.url);
@@ -31,7 +31,7 @@ Deno.serve((request) => {
             "content-type": "text/html",
             "cache-control": "public, max-age=10",
           },
-        }
+        },
       );
     case `/${dist.scriptHash}`:
       return new Response(dist.scriptContent, {

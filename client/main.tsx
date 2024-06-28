@@ -1,6 +1,6 @@
-import type { WebviewApi } from "npm:@types/vscode-webview@1.57.1";
-import React from "https://esm.sh/react@18.2.0?pin=v132";
-import { createRoot } from "https://esm.sh/react-dom@18.2.0/client?pin=v132";
+import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
+import React from "https://esm.sh/react@18.3.1?pin=v135";
+import { createRoot } from "https://esm.sh/react-dom@18.3.1/client?pin=v135";
 import {
   bsonBinaryToStructuredBson,
   DocumentWithInvalid,
@@ -8,8 +8,8 @@ import {
 import { WithLocation } from "../bson/location.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
-  if (typeof window.acquireVsCodeApi === "function") {
-    return window.acquireVsCodeApi();
+  if (typeof globalThis.acquireVsCodeApi === "function") {
+    return globalThis.acquireVsCodeApi();
   }
   return undefined;
 };
