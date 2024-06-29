@@ -1,112 +1,12 @@
+import { indexOf } from "./dataView.ts";
 import {
-  createOutOfRangeErrorMessage,
   getInt32,
   getString,
   getUint8,
   ReadonlyDataView,
-  setLocalOffsetAndLengthDataView,
   toReadonlyDataView,
 } from "./dataView.ts";
-import { assertEquals, assertThrows } from "jsr:@std/assert";
-
-Deno.test("setLocalOffsetAndLengthDataView ok", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer);
-  const result = setLocalOffsetAndLengthDataView(
-    toReadonlyDataView(dataView),
-    3,
-    4,
-  );
-  // **********
-  // ---****---
-  // ---****---
-  assertEquals(toCompareObject(result), {
-    offset: 3,
-    length: 4,
-  });
-});
-
-Deno.test("setLocalOffsetAndLengthDataView inside", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  const result = setLocalOffsetAndLengthDataView(
-    toReadonlyDataView(dataView),
-    3,
-    4,
-  );
-  // -********-
-  // ----****--
-  // ----****--
-  assertEquals(toCompareObject(result), {
-    offset: 4,
-    length: 4,
-  });
-});
-
-Deno.test("setLocalOffsetAndLengthDataView no change", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  const result = setLocalOffsetAndLengthDataView(
-    toReadonlyDataView(dataView),
-    0,
-    8,
-  );
-  // -********-
-  // -********-
-  // -********-
-  assertEquals(toCompareObject(result), {
-    offset: 1,
-    length: 8,
-  });
-});
-
-Deno.test("setLocalOffsetAndLengthDataView left over", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  // -********-
-  // *****-----
-  // -****-----
-  assertThrows(
-    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), -1, 5),
-    RangeError,
-    createOutOfRangeErrorMessage({
-      rawNewLeft: 0,
-      rawNewRight: 5,
-      oldLeft: 1,
-      oldRight: 9,
-    }),
-  );
-});
-
-Deno.test("setLocalOffsetAndLengthDataView right over", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  // -********-
-  // -----*****
-  // -----****-
-  assertThrows(
-    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), 4, 5),
-    RangeError,
-    createOutOfRangeErrorMessage({
-      rawNewLeft: 5,
-      rawNewRight: 10,
-      oldLeft: 1,
-      oldRight: 9,
-    }),
-  );
-});
-
-Deno.test("setLocalOffsetAndLengthDataView flip", () => {
-  const dataView = new DataView(new Uint8Array(10).buffer, 1, 8);
-  // -**|******-
-  // --!|-------
-  // ---|-------
-  assertThrows(
-    () => setLocalOffsetAndLengthDataView(toReadonlyDataView(dataView), 2, -1),
-    RangeError,
-    createOutOfRangeErrorMessage({
-      rawNewLeft: 3,
-      rawNewRight: 2,
-      oldLeft: 1,
-      oldRight: 9,
-    }),
-  );
-});
+import { assertEquals } from "jsr:@std/assert";
 
 const toCompareObject = (
   result: ReadonlyDataView,
@@ -154,6 +54,24 @@ Deno.test("getInt32 ok", () => {
   });
 });
 
+Deno.test("getInt32 overflow", () => {
+  const dataView = toReadonlyDataView(
+    new DataView(new Uint8Array([0, 3, 2, 1]).buffer, 1),
+  );
+  const result = getInt32(dataView);
+  assertEquals(result.withLocationValue, {
+    location: {
+      startIndex: 1,
+      endIndex: 4,
+    },
+    value: undefined,
+  });
+  assertEquals(toCompareObject(result.next), {
+    offset: 0,
+    length: 0,
+  });
+});
+
 Deno.test("getString", () => {
   const dataView = toReadonlyDataView(
     new DataView(new TextEncoder().encode("サンプルテキスト").buffer),
@@ -169,4 +87,28 @@ Deno.test("getString", () => {
       value: "サンプルテキスト",
     },
   });
+});
+
+Deno.test("indexOf with offset", () => {
+  assertEquals(
+    indexOf(
+      toReadonlyDataView(
+        new DataView(new Uint8Array([0, 15, 28, 3, 28, 22]).buffer, 3),
+      ),
+      28,
+    ),
+    1,
+  );
+});
+
+Deno.test("indexOf outside", () => {
+  assertEquals(
+    indexOf(
+      toReadonlyDataView(
+        new DataView(new Uint8Array([0, 15, 28, 3, 28, 22, 9]).buffer, 0, 3),
+      ),
+      22,
+    ),
+    undefined,
+  );
 });

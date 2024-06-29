@@ -10,14 +10,14 @@ import {
   importVsCodeApi,
   Uri,
   WebviewPanel,
-} from "https://deno.land/x/vscode@1.87.0/mod.ts";
+} from "https://deno.land/x/vscode@1.90.0/mod.ts";
 import { viewType } from "./lib.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
   if (vscode === undefined) {
     throw new Error(
-      "Could not import vscode api because it was not working within the extension"
+      "Could not import vscode api because it was not working within the extension",
     );
   }
 
@@ -32,7 +32,7 @@ export function activate(context: ExtensionContext) {
     backupCustomDocument: async (
       document: BsonEditorDocument,
       _context: CustomDocumentBackupContext,
-      _cancellation: CancellationToken
+      _cancellation: CancellationToken,
     ): Promise<CustomDocumentBackup> => {
       return {
         id: document.uri.toString(),
@@ -43,7 +43,7 @@ export function activate(context: ExtensionContext) {
     openCustomDocument: async (
       uri: Uri,
       _openContext: CustomDocumentOpenContext,
-      _token: CancellationToken
+      _token: CancellationToken,
     ): Promise<BsonEditorDocument> => {
       const file = await vscode.workspace.fs.readFile(uri);
       return {
@@ -56,13 +56,13 @@ export function activate(context: ExtensionContext) {
     resolveCustomEditor: async (
       _document: BsonEditorDocument,
       webviewPanel: WebviewPanel,
-      _token: CancellationToken
+      _token: CancellationToken,
     ): Promise<void> => {
       webviewPanel.webview.options = {
         enableScripts: true,
       };
       const scriptUri = webviewPanel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, "client.js")
+        vscode.Uri.joinPath(context.extensionUri, "client.js"),
       );
       webviewPanel.webview.html = `<!doctype html>
 <html lang="ja">
@@ -79,23 +79,23 @@ export function activate(context: ExtensionContext) {
     },
     saveCustomDocument: async (
       document: BsonEditorDocument,
-      _cancellation: CancellationToken
+      _cancellation: CancellationToken,
     ): Promise<void> => {
       await vscode.workspace.fs.writeFile(
         document.uri,
-        document.originalBinary
+        document.originalBinary,
       );
     },
     saveCustomDocumentAs: async (
       document: BsonEditorDocument,
       destination: Uri,
-      _cancellation: CancellationToken
+      _cancellation: CancellationToken,
     ): Promise<void> => {
       await vscode.workspace.fs.writeFile(destination, document.originalBinary);
     },
     revertCustomDocument: async (
       document: BsonEditorDocument,
-      _cancellation: CancellationToken
+      _cancellation: CancellationToken,
     ): Promise<void> => {
       const file = await vscode.workspace.fs.readFile(document.uri);
       document.originalBinary = file;
@@ -103,7 +103,7 @@ export function activate(context: ExtensionContext) {
   };
   const provider = vscode.window.registerCustomEditorProvider(
     viewType,
-    customEditorProvider
+    customEditorProvider,
   );
   context.subscriptions.push(provider);
 }

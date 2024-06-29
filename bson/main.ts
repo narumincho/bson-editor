@@ -1,20 +1,18 @@
 import {
+  createLocationAndNextDataView,
   getFloat64,
   getInt32,
-  getLocation,
   getString,
   getUint8,
   indexOf,
   ReadonlyDataView,
-  setLocalOffsetAndLengthDataView,
-  setLocalOffsetDataView,
   toReadonlyDataView,
   WithLocationAndNext,
 } from "./dataView.ts";
 import { WithLocation } from "./location.ts";
 
 export type ElementValueWithInvalid =
-  | { readonly type: "double"; readonly value: number }
+  | { readonly type: "double"; readonly value: number | undefined }
   | { readonly type: "string"; readonly value: StringWithInvalid }
   | { readonly type: "document"; readonly value: DocumentWithInvalid }
   | { readonly type: "int32"; readonly value: number };
@@ -148,10 +146,13 @@ const parseCString = (
   dataView: ReadonlyDataView,
 ): WithLocationAndNext<CStringWithInvalid> => {
   const endOfFlagLocalIndex = indexOf(dataView, 0);
-  const stringDataView = endOfFlagLocalIndex === undefined
-    ? dataView
-    : setLocalOffsetAndLengthDataView(dataView, 0, endOfFlagLocalIndex);
-  const stringResult = getString(stringDataView);
+  const stringDataView = createLocationAndNextDataView(
+    dataView,
+    endOfFlagLocalIndex === undefined
+      ? dataView.__dataView.byteLength
+      : endOfFlagLocalIndex,
+  );
+  const stringResult = getString(stringDataView.left);
   return {
     withLocationValue: {
       location: {
@@ -165,9 +166,7 @@ const parseCString = (
         notFoundEndOfFlag: endOfFlagLocalIndex === undefined,
       },
     },
-    next: endOfFlagLocalIndex === undefined
-      ? dataView
-      : setLocalOffsetDataView(dataView, endOfFlagLocalIndex + 1),
+    next: stringDataView.right,
   };
 };
 
@@ -175,12 +174,23 @@ const parseString = (
   dataView: ReadonlyDataView,
 ): WithLocationAndNext<StringWithInvalid> => {
   const size = getInt32(dataView);
-  const body = setLocalOffsetAndLengthDataView(
+  if (size.withLocationValue.value === undefined) {
+    return {
+      withLocationValue: {
+        location: size.withLocationValue.location,
+        value: {
+          value: "",
+          originalIfError: undefined,
+        },
+      },
+      next: size.next,
+    };
+  }
+  const body = createLocationAndNextDataView(
     size.next,
-    0,
-    size.withLocationValue.value - 1,
+    size.withLocationValue.value,
   );
-  const getStringResult = getString(body);
+  const getStringResult = getString(body.left);
   return {
     withLocationValue: {
       location: {
@@ -192,6 +202,6 @@ const parseString = (
         value: getStringResult.value.value,
       },
     },
-    next: setLocalOffsetDataView(size.next, size.withLocationValue.value),
+    next: body.right,
   };
 };

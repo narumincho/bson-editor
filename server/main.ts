@@ -12,11 +12,20 @@ Deno.serve((request) => {
 
 <head>
     <meta charset="UTF-8">
-    <title>Bson Editor</title>
+    <title>nBson Editor</title>
     <script type="module" src="/${dist.scriptHash}"></script>
     <style>
         :root {
           color-scheme: dark;
+        }
+
+        html {
+          height: 100%;
+        }
+
+        body {
+          margin: 0;
+          height: 100%;
         }
     </style>
 </head>

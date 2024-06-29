@@ -4,7 +4,7 @@ const readonlyDataViewSymbolBland = Symbol("readonlyDataViewSymbolBland");
 
 export type ReadonlyDataView = {
   readonly __dataView: DataView;
-  __readonlyDataViewSymbolBland: typeof readonlyDataViewSymbolBland;
+  readonly __readonlyDataViewSymbolBland: typeof readonlyDataViewSymbolBland;
 };
 
 export const toReadonlyDataView = (dataView: DataView): ReadonlyDataView => {
@@ -19,64 +19,54 @@ export type WithLocationAndNext<T> = {
   readonly next: ReadonlyDataView;
 };
 
-export const createOutOfRangeErrorMessage = (parameter: {
-  readonly oldLeft: number;
-  readonly oldRight: number;
-  readonly rawNewLeft: number;
-  readonly rawNewRight: number;
-}): string => {
-  const { oldLeft, oldRight, rawNewLeft, rawNewRight } = parameter;
-  const message =
-    `Out of range: oldLeft=${oldLeft}, oldRight=${oldRight}, rawNewLeft=${rawNewLeft}, rawNewRight=${rawNewRight}`;
-  return message;
-};
+const emptyDataView = toReadonlyDataView(new DataView(new ArrayBuffer(0)));
 
 /**
- * DataView の範囲をさらに狭めたものを返す.
- *
- * 範囲外を指定した場合は 範囲内に収めたものを返し, leftOverflow または rightOverflow が true になる.
- * @param dataView
- * @param localOffset
- * @param length
- * @returns
+ * DataView を2つに分割する
+ * @param localOffset 分割する位置
  */
-export const setLocalOffsetAndLengthDataView = (
+export const createLocationAndNextDataView = (
   dataView: ReadonlyDataView,
   localOffset: number,
-  length: number,
-): ReadonlyDataView => {
-  const oldLeft = dataView.__dataView.byteOffset;
-  const oldRight = dataView.__dataView.byteOffset +
-    dataView.__dataView.byteLength;
-  const rawNewLeft = oldLeft + localOffset;
-  const rawNewRight = rawNewLeft + length;
-  const newLeft = Math.min(Math.max(oldLeft, rawNewLeft), oldRight);
-  const newRight = Math.min(Math.max(newLeft, rawNewRight), oldRight);
-
-  if (rawNewLeft !== newLeft || rawNewRight !== newRight) {
-    throw new RangeError(
-      createOutOfRangeErrorMessage({
-        oldLeft,
-        oldRight,
-        rawNewLeft,
-        rawNewRight,
-      }),
-    );
+): {
+  readonly left: ReadonlyDataView;
+  readonly right: ReadonlyDataView;
+  readonly overflow: boolean;
+} => {
+  console.log(dataView.__dataView.byteLength, localOffset);
+  if (dataView.__dataView.byteLength < localOffset) {
+    return {
+      left: dataView,
+      right: emptyDataView,
+      overflow: true,
+    };
   }
-  return toReadonlyDataView(
-    new DataView(dataView.__dataView.buffer, newLeft, newRight - newLeft),
-  );
+  return {
+    left: toReadonlyDataView(
+      new DataView(
+        dataView.__dataView.buffer,
+        dataView.__dataView.byteOffset,
+        localOffset,
+      ),
+    ),
+    right: toReadonlyDataView(
+      new DataView(
+        dataView.__dataView.buffer,
+        dataView.__dataView.byteOffset + localOffset,
+        dataView.__dataView.byteLength - localOffset,
+      ),
+    ),
+    overflow: false,
+  };
 };
 
-export const setLocalOffsetDataView = (
+export const dataViewToLocation = (
   dataView: ReadonlyDataView,
-  localOffset: number,
-): ReadonlyDataView => {
-  return setLocalOffsetAndLengthDataView(
-    dataView,
-    localOffset,
-    dataView.__dataView.byteLength - localOffset,
-  );
+): Location => {
+  return {
+    startIndex: dataView.__dataView.byteOffset,
+    endIndex: dataView.__dataView.byteOffset + dataView.__dataView.byteLength,
+  };
 };
 
 export const getLocation = (dataView: ReadonlyDataView): Location => {
@@ -91,17 +81,17 @@ export const getLocation = (dataView: ReadonlyDataView): Location => {
  */
 export const getUint8 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number> => {
-  const value = dataView.__dataView.getUint8(0);
+): WithLocationAndNext<number | undefined> => {
+  const { left, right, overflow } = createLocationAndNextDataView(
+    dataView,
+    1,
+  );
   return {
     withLocationValue: {
-      value,
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: dataView.__dataView.byteOffset + 1,
-      },
+      value: overflow ? undefined : left.__dataView.getUint8(0),
+      location: dataViewToLocation(left),
     },
-    next: setLocalOffsetDataView(dataView, 1),
+    next: right,
   };
 };
 
@@ -110,17 +100,17 @@ export const getUint8 = (
  */
 export const getInt32 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number> => {
-  const value = dataView.__dataView.getInt32(0, true);
+): WithLocationAndNext<number | undefined> => {
+  const { left, right, overflow } = createLocationAndNextDataView(
+    dataView,
+    4,
+  );
   return {
     withLocationValue: {
-      value,
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: dataView.__dataView.byteOffset + 4,
-      },
+      value: overflow ? undefined : left.__dataView.getInt32(0, true),
+      location: dataViewToLocation(left),
     },
-    next: setLocalOffsetDataView(dataView, 4),
+    next: right,
   };
 };
 
@@ -129,20 +119,24 @@ export const getInt32 = (
  */
 export const getFloat64 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number> => {
-  const value = dataView.__dataView.getFloat64(0, true);
+): WithLocationAndNext<number | undefined> => {
+  const { left, right, overflow } = createLocationAndNextDataView(
+    dataView,
+    8,
+  );
   return {
     withLocationValue: {
-      value,
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: dataView.__dataView.byteOffset + 8,
-      },
+      value: overflow ? undefined : dataView.__dataView.getFloat64(0, true),
+      location: dataViewToLocation(left),
     },
-    next: setLocalOffsetDataView(dataView, 8),
+    next: right,
   };
 };
 
+/**
+ * 指定した値が含まれる位置を返す
+ * @returns 相対位置を返す
+ */
 export const indexOf = (
   dataView: ReadonlyDataView,
   value: number,

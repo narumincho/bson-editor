@@ -1,11 +1,7 @@
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React from "https://esm.sh/react@18.3.1?pin=v135";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client?pin=v135";
-import {
-  bsonBinaryToStructuredBson,
-  DocumentWithInvalid,
-} from "../bson/main.ts";
-import { WithLocation } from "../bson/location.ts";
+import { Editor } from "./editor.tsx";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -23,37 +19,69 @@ document.body.appendChild(rootElement);
 const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [structuredBson, setStructuredBson] = React.useState<
-    WithLocation<DocumentWithInvalid> | undefined
+  const [bsonFile, setBsonFile] = React.useState<
+    Uint8Array | undefined
   >(undefined);
 
   return (
     <div>
-      {vscodeWebviewApi === undefined
-        ? <a href="https://github.com/narumincho/bson-editor">GitHub</a>
-        : undefined}
-      <div>普通にWebサイトでも動作するBsonエディターを作りたい</div>
-      <input
-        type="file"
-        disabled={isLoading}
-        onChange={(e) => {
-          console.log(e);
-          setIsLoading(true);
-          e.target.files?.[0]?.arrayBuffer().then((binary) => {
-            setIsLoading(false);
-            const structuredBson = bsonBinaryToStructuredBson(
-              new Uint8Array(binary),
-            );
-            console.log(structuredBson);
-            setStructuredBson(structuredBson);
-          });
+      <header
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          padding: 8,
+          alignItems: "center",
+          backgroundColor: "#434242",
         }}
-      />
-      {isLoading ? <div>読み込み中</div> : undefined}
-      {structuredBson === undefined
-        ? undefined
-        : <code>{JSON.stringify(structuredBson, null, 2)}</code>}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: 24,
+          }}
+        >
+          nBSON Editor
+        </h1>
+        {vscodeWebviewApi === undefined
+          ? <a href="https://github.com/narumincho/bson-editor">GitHub</a>
+          : undefined}
+      </header>
+      <div
+        style={{
+          padding: 12,
+        }}
+      >
+        <input
+          type="file"
+          onChange={async (e) => {
+            console.log(e);
+            const bsonFile = await e.target.files?.[0]?.arrayBuffer();
+            if (bsonFile !== undefined) {
+              setBsonFile(new Uint8Array(bsonFile));
+            }
+          }}
+        />
+      </div>
+      {bsonFile === undefined
+        ? (
+          <div
+            style={{
+              padding: 12,
+            }}
+          >
+            <button
+              style={{
+                padding: 8,
+              }}
+              onClick={() => {
+                setBsonFile(new Uint8Array());
+              }}
+            >
+              create from empty file
+            </button>
+          </div>
+        )
+        : <Editor value={bsonFile} />}
     </div>
   );
 };

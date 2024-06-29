@@ -2,7 +2,10 @@
 
 _under development_
 
+## 参考
+
 - [bson spec](https://bsonspec.org/)
+- https://www.mongodb.com/resources/basics/json-and-bson
 
 ## start web server
 
