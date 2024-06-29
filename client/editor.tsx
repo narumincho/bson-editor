@@ -3,6 +3,7 @@ import { WithLocation } from "../bson/location.ts";
 import {
     bsonBinaryToStructuredBson,
     DocumentWithInvalid,
+    ElementValueWithInvalid,
 } from "../bson/main.ts";
 
 export const Editor = (props: {
@@ -23,7 +24,7 @@ export const Editor = (props: {
             }}
         >
             <div>
-                パースされたもの
+                <DocumentView structuredBson={structuredBson.value} />
             </div>
             <div
                 style={{
@@ -38,9 +39,90 @@ export const Editor = (props: {
                 >
                 </div>
             </div>
-            <div>
-                バイナリエディタ
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr ".repeat(8),
+                }}
+            >
+                {[...props.value].map((byte, index) => (
+                    <div
+                        key={index}
+                        style={{
+                            padding: 4,
+                        }}
+                    >
+                        {byte.toString(16).padStart(2, "0")}
+                    </div>
+                ))}
             </div>
         </div>
     );
+};
+
+const DocumentView = (props: {
+    structuredBson: DocumentWithInvalid;
+}): React.ReactElement => {
+    return (
+        <div>
+            {props.structuredBson.value.map((element) => (
+                <div
+                    key={element.value.name.value.value}
+                    style={{
+                        padding: 16,
+                    }}
+                >
+                    {element.value.name.value.value}
+                    <div
+                        style={{
+                            padding: 8,
+                        }}
+                    >
+                        <ElementView
+                            value={element.value.value.value}
+                        />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
+
+const ElementView = (props: {
+    value: ElementValueWithInvalid;
+}): React.ReactElement => {
+    switch (props.value.type) {
+        case "double":
+            return (
+                <div>
+                    double {props.value.value}
+                </div>
+            );
+        case "int32":
+            return (
+                <div>
+                    int32 {props.value.value}
+                </div>
+            );
+        case "string":
+            return (
+                <div>
+                    string {props.value.value.value}
+                </div>
+            );
+        case "document":
+            return (
+                <div>
+                    <DocumentView
+                        structuredBson={props.value.value}
+                    />
+                </div>
+            );
+        default:
+            return (
+                <div>
+                    unsupported type
+                </div>
+            );
+    }
 };
