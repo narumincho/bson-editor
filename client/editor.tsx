@@ -67,17 +67,16 @@ const DocumentView = (props: {
 }): React.ReactElement => {
   return (
     <div>
-      {props.structuredBson.unsupportedTypesError
-        ? <div>unsupported types</div>
-        : undefined}
-      {props.structuredBson.value.map((element) => (
+      {props.structuredBson.value.map((element, index) => (
         <div
-          key={element.value.name.value.value}
+          key={`${element.value.name.value.value}-${index}`}
           style={{
             padding: 16,
           }}
         >
-          {element.value.name.value.value}
+          <div style={{ whiteSpace: "pre" }}>
+            "{element.value.name.value.value}"
+          </div>
           <div
             style={{
               padding: 8,
@@ -89,6 +88,27 @@ const DocumentView = (props: {
           </div>
         </div>
       ))}
+      {props.structuredBson.lastUnsupportedType !== undefined
+        ? (
+          <div
+            key={`${props.structuredBson.lastUnsupportedType.name.value}-lastUnsupportedType`}
+            style={{
+              padding: 16,
+            }}
+          >
+            <div style={{ whiteSpace: "pre" }}>
+              "{props.structuredBson.lastUnsupportedType.name.value.value}"
+            </div>
+            <div
+              style={{
+                padding: 8,
+              }}
+            >
+              unsupported type
+            </div>
+          </div>
+        )
+        : undefined}
     </div>
   );
 };

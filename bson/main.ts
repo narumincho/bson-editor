@@ -30,7 +30,12 @@ export type StringWithInvalid = {
 
 export type DocumentWithInvalid = {
   readonly value: ReadonlyArray<WithLocation<Element>>;
-  readonly unsupportedTypesError: boolean;
+  readonly lastUnsupportedType: UnsupportedTypeInElement | undefined;
+};
+
+export type UnsupportedTypeInElement = {
+  readonly name: WithLocation<CStringWithInvalid>;
+  readonly typeId: number | undefined;
 };
 
 export type Element = {
@@ -54,92 +59,118 @@ const deserializeDocument = (
   while (true) {
     const element = deserializeElement(dataViewCurrent);
 
-    if (element === "endOfElement") {
-      return {
-        location: {
-          startIndex: dataView.__dataView.byteOffset,
-          endIndex: dataViewCurrent.__dataView.byteOffset +
-            dataViewCurrent.__dataView.byteLength - 1,
-        },
-        value: {
-          value: elements,
-          unsupportedTypesError: false,
-        },
-      };
+    switch (element.type) {
+      case "element": {
+        elements.push(element.element.withLocationValue);
+        dataViewCurrent = element.element.next;
+        break;
+      }
+      case "endOfElement":
+        return {
+          location: {
+            startIndex: dataView.__dataView.byteOffset,
+            endIndex: dataViewCurrent.__dataView.byteOffset +
+              dataViewCurrent.__dataView.byteLength - 1,
+          },
+          value: { value: elements, lastUnsupportedType: undefined },
+        };
+      case "unsupportedType": {
+        return {
+          location: {
+            startIndex: dataView.__dataView.byteOffset,
+            endIndex: dataViewCurrent.__dataView.byteOffset +
+              dataViewCurrent.__dataView.byteLength - 1,
+          },
+          value: {
+            value: elements,
+            lastUnsupportedType: element.unsupportedType,
+          },
+        };
+      }
     }
-    if (element === "unsupportedType") {
-      return {
-        location: {
-          startIndex: dataView.__dataView.byteOffset,
-          endIndex: dataViewCurrent.__dataView.byteOffset +
-            dataViewCurrent.__dataView.byteLength - 1,
-        },
-        value: { value: elements, unsupportedTypesError: true },
-      };
-    }
-    elements.push(element.withLocationValue);
-    dataViewCurrent = element.next;
   }
 };
 
 const typeIdDouble = 0x01;
 const typeIdString = 0x02;
 
+type DeserializeElementResult = {
+  readonly type: "element";
+  readonly element: WithLocationAndNext<Element>;
+} | {
+  readonly type: "endOfElement";
+} | {
+  readonly type: "unsupportedType";
+  readonly unsupportedType: UnsupportedTypeInElement;
+};
+
 const deserializeElement = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<Element> | "endOfElement" | "unsupportedType" => {
+): DeserializeElementResult => {
   const typeIdAndNext = getUint8(dataView);
   if (typeIdAndNext.withLocationValue.value === 0) {
-    return "endOfElement";
+    return { type: "endOfElement" };
   }
   const nameAndNext = parseCString(typeIdAndNext.next);
   switch (typeIdAndNext.withLocationValue.value) {
     case typeIdDouble: {
       const double = getFloat64(nameAndNext.next);
       return {
-        withLocationValue: {
-          location: {
-            startIndex: typeIdAndNext.withLocationValue.location.startIndex,
-            endIndex: double.withLocationValue.location.endIndex,
-          },
-          value: {
-            name: nameAndNext.withLocationValue,
+        type: "element",
+        element: {
+          withLocationValue: {
+            location: {
+              startIndex: typeIdAndNext.withLocationValue.location.startIndex,
+              endIndex: double.withLocationValue.location.endIndex,
+            },
             value: {
-              location: double.withLocationValue.location,
+              name: nameAndNext.withLocationValue,
               value: {
-                type: "double",
-                value: double.withLocationValue.value,
+                location: double.withLocationValue.location,
+                value: {
+                  type: "double",
+                  value: double.withLocationValue.value,
+                },
               },
             },
           },
+          next: double.next,
         },
-        next: double.next,
       };
     }
     case typeIdString: {
       const string = parseString(nameAndNext.next);
       return {
-        withLocationValue: {
-          location: {
-            startIndex: typeIdAndNext.withLocationValue.location.startIndex,
-            endIndex: string.withLocationValue.location.endIndex,
-          },
-          value: {
-            name: nameAndNext.withLocationValue,
+        type: "element",
+        element: {
+          withLocationValue: {
+            location: {
+              startIndex: typeIdAndNext.withLocationValue.location.startIndex,
+              endIndex: string.withLocationValue.location.endIndex,
+            },
             value: {
-              location: string.withLocationValue.location,
+              name: nameAndNext.withLocationValue,
               value: {
-                type: "string",
-                value: string.withLocationValue.value,
+                location: string.withLocationValue.location,
+                value: {
+                  type: "string",
+                  value: string.withLocationValue.value,
+                },
               },
             },
           },
+          next: string.next,
         },
-        next: string.next,
       };
     }
   }
-  return "unsupportedType";
+  return {
+    type: "unsupportedType",
+    unsupportedType: {
+      typeId: typeIdAndNext.withLocationValue.value,
+      name: nameAndNext.withLocationValue,
+    },
+  };
 };
 
 const parseCString = (
