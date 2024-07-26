@@ -7,10 +7,19 @@ import {
   ElementValueWithInvalid,
 } from "../bson/main.ts";
 
+type Selection = {
+  readonly type: "tree";
+} | {
+  readonly type: "binary";
+};
+
 export const Editor = (props: {
   value: Uint8Array;
 }): React.ReactElement => {
   const [editorWidth, setEditorWidth] = React.useState(400);
+  const [selection, setSelection] = React.useState<ReadonlySet<number>>(
+    new Set(),
+  );
 
   const structuredBson = React.useMemo(() =>
     bsonBinaryToStructuredBson(
@@ -52,6 +61,20 @@ export const Editor = (props: {
             style={{
               padding: 4,
               color: index % 2 === 0 ? "#ababab" : "#c7c7c7",
+              backgroundColor: selection.has(index) ? "#444" : "transparent",
+            }}
+            onClick={(e) => {
+              if (e.ctrlKey || e.metaKey) {
+                const newSelection = new Set(selection);
+                if (selection.has(index)) {
+                  newSelection.delete(index);
+                } else {
+                  newSelection.add(index);
+                }
+                setSelection(newSelection);
+              } else {
+                setSelection(new Set([index]));
+              }
             }}
           >
             {byte.toString(16).padStart(2, "0")}

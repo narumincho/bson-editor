@@ -31,7 +31,7 @@ Deno.serve((request) => {
 </head>
 <body>
   <div id="loading">Bson Editor loading</div>
-  <noscript>JavaScript is required to run Bson Editor.</noscript>
+  <noscript>JavaScript is required to run nBson Editor.</noscript>
 </body>
 
 </html>
