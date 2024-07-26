@@ -51,6 +51,7 @@ export const Editor = (props: {
             key={index}
             style={{
               padding: 4,
+              color: index % 2 === 0 ? "#ababab" : "#c7c7c7",
             }}
           >
             {byte.toString(16).padStart(2, "0")}
@@ -66,6 +67,9 @@ const DocumentView = (props: {
 }): React.ReactElement => {
   return (
     <div>
+      {props.structuredBson.unsupportedTypesError
+        ? <div>unsupported types</div>
+        : undefined}
       {props.structuredBson.value.map((element) => (
         <div
           key={element.value.name.value.value}
