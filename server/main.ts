@@ -11,33 +11,34 @@ Deno.serve((request) => {
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>nBson Editor</title>
-    <script type="module" src="/${dist.scriptHash}"></script>
-    <style>
-        :root {
-          color-scheme: dark;
-        }
+  <meta charset="UTF-8">
+  <title>nBson Editor</title>
+  <script type="module" src="/${dist.scriptHash}"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
 
-        html {
-          height: 100%;
-        }
+    html {
+      height: 100%;
+    }
 
-        body {
-          margin: 0;
-          height: 100%;
-        }
-    </style>
+    body {
+      margin: 0;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-    <div id="loading">Bson Editor loading</div>
+  <div id="loading">Bson Editor loading</div>
+  <noscript>JavaScript is required to run Bson Editor.</noscript>
 </body>
 
 </html>
 `,
         {
           headers: {
-            "content-type": "text/html",
+            "content-type": "text/html; charset=UTF-8",
             "cache-control": "public, max-age=10",
           },
         },
@@ -45,7 +46,7 @@ Deno.serve((request) => {
     case `/${dist.scriptHash}`:
       return new Response(dist.scriptContent, {
         headers: {
-          "content-type": "text/javascript",
+          "content-type": "text/javascript; charset=UTF-8",
           "cache-control": "public, max-age=604800, immutable",
         },
       });

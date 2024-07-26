@@ -29,7 +29,6 @@ const build = async (url: URL): Promise<Uint8Array> => {
 
   for (const esbuildResultFile of esbuildResult.outputFiles ?? []) {
     if (esbuildResultFile.path === "<stdout>") {
-      console.log("js 発見");
       const scriptContent = esbuildResultFile.contents;
 
       return scriptContent;

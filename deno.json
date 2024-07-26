@@ -1,15 +1,19 @@
 {
-    "compilerOptions": {
-        "noUncheckedIndexedAccess": true,
-        "exactOptionalPropertyTypes": true,
-        "jsx": "react",
-        "jsxFactory": "React.createElement",
-        "jsxFragmentFactory": "React.Fragment",
-        "lib": [
-            "dom",
-            "dom.iterable",
-            "deno.ns",
-            "deno.unstable"
-        ]
-    }
+  "compilerOptions": {
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "jsx": "react",
+    "jsxFactory": "React.createElement",
+    "jsxFragmentFactory": "React.Fragment",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "deno.ns",
+      "deno.unstable"
+    ]
+  },
+  "tasks": {
+    "build-client": "deno run --check -A ./server/build.ts",
+    "run-server": "deno run --check --watch -A ./server/main.ts"
+  }
 }
