@@ -1,15 +1,12 @@
-import { fromFileUrl } from "jsr:@std/path";
-import { denoPlugins } from "https://deno.land/x/esbuild_deno_loader@0.9.0/mod.ts";
-import {
-  build as esBuild,
-  type Plugin,
-} from "https://deno.land/x/esbuild@v0.20.2/mod.js";
-import { ensureFile } from "jsr:@std/fs";
+import { fromFileUrl } from "@std/path";
+import { denoPlugin } from "@deno/esbuild-plugin";
+import { build as esBuild } from "esbuild";
+import { ensureFile } from "@std/fs";
 import { viewType } from "./lib.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
-  content: string
+  content: string,
 ): Promise<void> => {
   console.log(path.toString() + " に書き込み中... " + content.length + "文字");
   await ensureFile(path);
@@ -19,13 +16,13 @@ export const writeTextFileWithLog = async (
 
 const distributionPath = new URL(
   "../vscodeExtensionDistribution/",
-  import.meta.url
+  import.meta.url,
 );
 
 const build = async (url: URL, format: "cjs" | "esm"): Promise<string> => {
   const esbuildResult = await esBuild({
     entryPoints: [fromFileUrl(url)],
-    plugins: denoPlugins() as Plugin[],
+    plugins: [denoPlugin()],
     write: false,
     bundle: true,
     format,
@@ -36,7 +33,7 @@ const build = async (url: URL, format: "cjs" | "esm"): Promise<string> => {
     if (esbuildResultFile.path === "<stdout>") {
       console.log("js 発見");
       const scriptContent = new TextDecoder().decode(
-        esbuildResultFile.contents
+        esbuildResultFile.contents,
       );
 
       return scriptContent;
@@ -49,12 +46,12 @@ const scriptRelativePath = "./main.js";
 
 writeTextFileWithLog(
   new URL(scriptRelativePath, distributionPath),
-  await build(new URL("./main.ts", import.meta.url), "cjs")
+  await build(new URL("./main.ts", import.meta.url), "cjs"),
 );
 
 writeTextFileWithLog(
   new URL("client.js", distributionPath),
-  await build(new URL("../client/main.tsx", import.meta.url), "esm")
+  await build(new URL("../client/main.tsx", import.meta.url), "esm"),
 );
 
 writeTextFileWithLog(
@@ -94,11 +91,11 @@ writeTextFileWithLog(
     },
     browser: scriptRelativePath,
     publisher: "narumincho",
-  })
+  }),
 );
 
 writeTextFileWithLog(
   new URL("README.md", distributionPath),
   `bson-editor VSCode extension
-`
+`,
 );

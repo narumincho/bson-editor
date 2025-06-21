@@ -1,4 +1,4 @@
-import { serialize } from "jsr:@lucsoft/web-bson";
+import { serialize } from "@lucsoft/web-bson";
 
 const doc = { long: "サンプルテキスト" };
 const data = serialize(doc);

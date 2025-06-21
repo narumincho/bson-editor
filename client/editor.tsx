@@ -1,4 +1,4 @@
-import React from "https://esm.sh/react@18.3.1?pin=v135";
+import React from "react";
 import { WithLocation } from "../bson/location.ts";
 
 import {

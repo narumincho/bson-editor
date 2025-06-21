@@ -1,11 +1,8 @@
-import { fromFileUrl } from "https://deno.land/std@0.201.0/path/posix.ts";
-import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@0.10.3";
-import {
-  build as esbuildBuild,
-  stop as esbuildStop,
-} from "https://deno.land/x/esbuild@v0.23.0/mod.js";
-import { ensureFile } from "https://deno.land/std@0.201.0/fs/mod.ts";
-import { toHashString } from "https://deno.land/std@0.201.0/crypto/mod.ts";
+import { fromFileUrl } from "@std/path/posix";
+import { denoPlugin } from "@deno/esbuild-plugin";
+import { build as esbuildBuild, stop as esbuildStop } from "esbuild";
+import { ensureFile } from "@std/fs";
+import { encodeHex } from "@std/encoding";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -20,7 +17,7 @@ export const writeTextFileWithLog = async (
 const build = async (url: URL): Promise<Uint8Array> => {
   const esbuildResult = await esbuildBuild({
     entryPoints: [fromFileUrl(url)],
-    plugins: denoPlugins(),
+    plugins: [denoPlugin()],
     write: false,
     bundle: true,
     format: "esm",
@@ -41,9 +38,8 @@ const scriptContent = await build(
   new URL("../client/main.tsx", import.meta.url),
 );
 
-const scriptHash = toHashString(
+const scriptHash = encodeHex(
   await crypto.subtle.digest("SHA-256", scriptContent),
-  "hex",
 );
 
 await writeTextFileWithLog(

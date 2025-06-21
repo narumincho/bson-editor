@@ -13,7 +13,23 @@
     ]
   },
   "tasks": {
-    "build-client": "deno run --check -A ./server/build.ts",
+    "build-client": {
+      "command": "deno run --check -A ./server/build.ts",
+      "description": "Build code to run in a web browser"
+    },
     "run-server": "deno run --check --watch -A ./server/main.ts"
+  },
+  "imports": {
+    "@deno/esbuild-plugin": "jsr:@deno/esbuild-plugin@^1.0.1",
+    "@lucsoft/web-bson": "jsr:@lucsoft/web-bson@^0.4.0",
+    "@narumincho/vscode": "jsr:@narumincho/vscode@^1.99.0",
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
+    "@std/fs": "jsr:@std/fs@^1.0.18",
+    "@std/path": "jsr:@std/path@^1.1.0",
+    "@types/react": "npm:@types/react@^19.1.8",
+    "@types/react-dom": "npm:@types/react-dom@^19.1.6",
+    "esbuild": "npm:esbuild@^0.25.5",
+    "react": "npm:react@^19.1.0",
+    "react-dom": "npm:react-dom@^19.1.0"
   }
 }
