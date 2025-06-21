@@ -3,8 +3,12 @@
   "specifiers": {
     "jsr:@deno/esbuild-plugin@^1.0.1": "1.0.1",
     "jsr:@deno/loader@~0.1.2": "0.1.2",
+    "jsr:@lucsoft/web-bson@0.4": "0.4.0",
+    "jsr:@narumincho/vscode@^1.99.0": "1.99.0",
+    "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
     "jsr:@std/fs@^1.0.18": "1.0.18",
+    "jsr:@std/internal@^1.0.6": "1.0.8",
     "jsr:@std/path@^1.1.0": "1.1.0",
     "npm:@types/node@*": "22.15.15",
     "npm:@types/react-dom@^19.1.6": "19.1.6_@types+react@19.1.8",
@@ -25,6 +29,18 @@
     "@deno/loader@0.1.2": {
       "integrity": "36882e2ef7cc57a0f8924877593b98e3c58fbd2359884ff4e0bf2f50ff6ceff3"
     },
+    "@lucsoft/web-bson@0.4.0": {
+      "integrity": "8ede9f3c223dd6095869fae84e99dcf0f12da52f37426e22d57181ecc5524308"
+    },
+    "@narumincho/vscode@1.99.0": {
+      "integrity": "ea775d96b66fb0c2f33220df3162be8370dc48c77e771eb074de521c8a2c302e"
+    },
+    "@std/assert@1.0.13": {
+      "integrity": "ae0d31e41919b12c656c742b22522c32fb26ed0cba32975cb0de2a273cb68b29",
+      "dependencies": [
+        "jsr:@std/internal"
+      ]
+    },
     "@std/encoding@1.0.10": {
       "integrity": "8783c6384a2d13abd5e9e87a7ae0520a30e9f56aeeaa3bdf910a3eaaf5c811a1"
     },
@@ -33,6 +49,9 @@
       "dependencies": [
         "jsr:@std/path"
       ]
+    },
+    "@std/internal@1.0.8": {
+      "integrity": "fc66e846d8d38a47cffd274d80d2ca3f0de71040f855783724bb6b87f60891f5"
     },
     "@std/path@1.1.0": {
       "integrity": "ddc94f8e3c275627281cbc23341df6b8bcc874d70374f75fec2533521e3d6886"
@@ -239,6 +258,7 @@
       "jsr:@deno/esbuild-plugin@^1.0.1",
       "jsr:@lucsoft/web-bson@0.4",
       "jsr:@narumincho/vscode@^1.99.0",
+      "jsr:@std/assert@^1.0.13",
       "jsr:@std/encoding@^1.0.10",
       "jsr:@std/fs@^1.0.18",
       "jsr:@std/path@^1.1.0",

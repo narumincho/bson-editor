@@ -1,5 +1,5 @@
 import { bsonBinaryToStructuredBson } from "./main.ts";
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "@std/assert";
 
 Deno.test("bsonBinaryToStructuredBson", () => {
   assertEquals(
@@ -92,6 +92,7 @@ Deno.test("bsonBinaryToStructuredBson", () => {
             },
           },
         ],
+        // lastUnsupportedType: {},
         unsupportedTypesError: false,
       },
     },

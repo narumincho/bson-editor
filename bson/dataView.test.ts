@@ -6,7 +6,7 @@ import {
   ReadonlyDataView,
   toReadonlyDataView,
 } from "./dataView.ts";
-import { assertEquals } from "jsr:@std/assert";
+import { assertEquals } from "@std/assert";
 
 const toCompareObject = (
   result: ReadonlyDataView,

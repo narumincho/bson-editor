@@ -1,5 +1,3 @@
-import { ReadonlyDataView } from "./dataView.ts";
-
 export type Location = {
   readonly startIndex: number;
   readonly endIndex: number;
