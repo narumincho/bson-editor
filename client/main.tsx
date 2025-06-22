@@ -1,7 +1,8 @@
-import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
+import type { WebviewApi } from "npm:@types/vscode-webview";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./editor.tsx";
+import { serialize } from "bson";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -75,7 +76,7 @@ const App = (): React.ReactElement => {
                 padding: 8,
               }}
               onClick={() => {
-                setBsonFile(new Uint8Array());
+                setBsonFile(serialize({}));
               }}
             >
               create from empty file

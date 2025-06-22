@@ -3,7 +3,6 @@
   "specifiers": {
     "jsr:@deno/esbuild-plugin@^1.0.1": "1.0.1",
     "jsr:@deno/loader@~0.1.2": "0.1.2",
-    "jsr:@lucsoft/web-bson@0.4": "0.4.0",
     "jsr:@narumincho/vscode@^1.99.0": "1.99.0",
     "jsr:@std/assert@^1.0.13": "1.0.13",
     "jsr:@std/encoding@^1.0.10": "1.0.10",
@@ -13,6 +12,7 @@
     "npm:@types/node@*": "22.15.15",
     "npm:@types/react-dom@^19.1.6": "19.1.6_@types+react@19.1.8",
     "npm:@types/react@^19.1.8": "19.1.8",
+    "npm:bson@^6.10.4": "6.10.4",
     "npm:esbuild@~0.25.5": "0.25.5",
     "npm:react-dom@^19.1.0": "19.1.0_react@19.1.0",
     "npm:react@^19.1.0": "19.1.0"
@@ -28,9 +28,6 @@
     },
     "@deno/loader@0.1.2": {
       "integrity": "36882e2ef7cc57a0f8924877593b98e3c58fbd2359884ff4e0bf2f50ff6ceff3"
-    },
-    "@lucsoft/web-bson@0.4.0": {
-      "integrity": "8ede9f3c223dd6095869fae84e99dcf0f12da52f37426e22d57181ecc5524308"
     },
     "@narumincho/vscode@1.99.0": {
       "integrity": "ea775d96b66fb0c2f33220df3162be8370dc48c77e771eb074de521c8a2c302e"
@@ -201,6 +198,9 @@
         "csstype"
       ]
     },
+    "bson@6.10.4": {
+      "integrity": "sha512-WIsKqkSC0ABoBJuT1LEX+2HEvNmNKKgnTAyd0fL8qzK4SH2i9NXg+t08YtdZp/V9IZ33cxe3iV4yM0qg8lMQng=="
+    },
     "csstype@3.1.3": {
       "integrity": "sha512-M1uQkMl8rQK/szD0LNhtqxIPLpimGm8sOBwU7lLnCpSbTyY3yeU1Vc7l4KT5zT4s/yOxHH5O7tIuuLOCnLADRw=="
     },
@@ -256,7 +256,6 @@
   "workspace": {
     "dependencies": [
       "jsr:@deno/esbuild-plugin@^1.0.1",
-      "jsr:@lucsoft/web-bson@0.4",
       "jsr:@narumincho/vscode@^1.99.0",
       "jsr:@std/assert@^1.0.13",
       "jsr:@std/encoding@^1.0.10",
@@ -264,6 +263,7 @@
       "jsr:@std/path@^1.1.0",
       "npm:@types/react-dom@^19.1.6",
       "npm:@types/react@^19.1.8",
+      "npm:bson@^6.10.4",
       "npm:esbuild@~0.25.5",
       "npm:react-dom@^19.1.0",
       "npm:react@^19.1.0"
