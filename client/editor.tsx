@@ -1,11 +1,6 @@
 import React from "react";
-import { WithLocation } from "../bson/location.ts";
 
-import {
-  bsonBinaryToStructuredBson,
-  DocumentWithInvalid,
-  ElementValueWithInvalid,
-} from "../bson/main.ts";
+import { Document, Element, fromBson } from "../bson/main.ts";
 
 type Selection = {
   readonly type: "tree";
@@ -21,10 +16,9 @@ export const Editor = (props: {
     new Set(),
   );
 
-  const structuredBson = React.useMemo(() =>
-    bsonBinaryToStructuredBson(
-      new Uint8Array(props.value),
-    ), [props.value]);
+  const structuredBson = React.useMemo(() => fromBson(props.value), [
+    props.value,
+  ]);
 
   return (
     <div
@@ -34,7 +28,7 @@ export const Editor = (props: {
       }}
     >
       <div>
-        <DocumentView structuredBson={structuredBson.value} />
+        <DocumentView structuredBson={structuredBson} />
       </div>
       <div
         style={{
@@ -85,85 +79,48 @@ export const Editor = (props: {
   );
 };
 
-const DocumentView = (props: {
-  structuredBson: DocumentWithInvalid;
+const DocumentView = ({ structuredBson }: {
+  structuredBson: Document;
 }): React.ReactElement => {
   return (
     <div>
-      {props.structuredBson.value.map((element, index) => (
+      {Object.entries(structuredBson).map(([name, element], index) => (
         <div
-          key={`${element.value.name.value.value}-${index}`}
+          key={`${name}-${index}`}
           style={{
             padding: 16,
           }}
         >
           <div style={{ whiteSpace: "pre" }}>
-            "{element.value.name.value.value}"
+            "{name}"
           </div>
           <div
             style={{
               padding: 8,
             }}
           >
-            <ElementView
-              value={element.value.value.value}
-            />
+            <ElementView element={element} />
           </div>
         </div>
       ))}
-      {props.structuredBson.lastUnsupportedType !== undefined
-        ? (
-          <div
-            key={`${props.structuredBson.lastUnsupportedType.name.value}-lastUnsupportedType`}
-            style={{
-              padding: 16,
-            }}
-          >
-            <div style={{ whiteSpace: "pre" }}>
-              "{props.structuredBson.lastUnsupportedType.name.value.value}"
-            </div>
-            <div
-              style={{
-                padding: 8,
-              }}
-            >
-              unsupported type
-            </div>
-          </div>
-        )
-        : undefined}
     </div>
   );
 };
 
-const ElementView = (props: {
-  value: ElementValueWithInvalid;
+const ElementView = ({ element }: {
+  element: Element;
 }): React.ReactElement => {
-  switch (props.value.type) {
-    case "double":
+  switch (typeof element) {
+    case "number":
       return (
         <div>
-          double {props.value.value}
-        </div>
-      );
-    case "int32":
-      return (
-        <div>
-          int32 {props.value.value}
+          double {element}
         </div>
       );
     case "string":
       return (
         <div>
-          string {props.value.value.value}
-        </div>
-      );
-    case "document":
-      return (
-        <div>
-          <DocumentView
-            structuredBson={props.value.value}
-          />
+          string {element}
         </div>
       );
     default:
