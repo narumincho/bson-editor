@@ -31,7 +31,6 @@ export const createLocationAndNextDataView = (
   readonly right: ReadonlyDataView;
   readonly overflow: boolean;
 } => {
-  console.log(dataView.__dataView.byteLength, localOffset);
   if (dataView.__dataView.byteLength < localOffset) {
     return {
       left: dataView,

@@ -1,4 +1,5 @@
-import { bsonBinaryToStructuredBson } from "./main.ts";
+import { toReadonlyDataView } from "./dataView.ts";
+import { bsonBinaryToStructuredBson, deserializeElement } from "./main.ts";
 import { assertEquals } from "@std/assert";
 
 Deno.test("bsonBinaryToStructuredBson", () => {
@@ -53,47 +54,77 @@ Deno.test("bsonBinaryToStructuredBson", () => {
       ]),
     ),
     {
-      location: {
-        startIndex: 0,
-        endIndex: 39,
-      },
-      value: {
-        value: [
-          {
-            location: {
-              startIndex: 4,
-              endIndex: 38,
-            },
+      value: [
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "long",
+          },
+          value: {
+            type: "string",
             value: {
-              name: {
-                location: {
-                  startIndex: 5,
-                  endIndex: 9,
-                },
-                value: {
-                  notFoundEndOfFlag: false,
-                  originalIfInvalidUtf8Error: undefined,
-                  value: "long",
-                },
-              },
-              value: {
-                location: {
-                  startIndex: 10,
-                  endIndex: 38,
-                },
-                value: {
-                  type: "string",
-                  value: {
-                    value: "サンプルテキスト",
-                    originalIfError: undefined,
-                  },
-                },
-              },
+              value: "サンプルテキスト",
+              originalIfError: undefined,
             },
           },
-        ],
-        // lastUnsupportedType: {},
-        unsupportedTypesError: false,
+        },
+      ],
+      lastUnsupportedType: undefined,
+    },
+  );
+});
+
+Deno.test("element", () => {
+  assertEquals(
+    deserializeElement(
+      toReadonlyDataView(new DataView(new Uint8Array([0x00]).buffer)),
+    ),
+    { type: "endOfElement" },
+  );
+
+  const doubleValue = new DataView(new Uint8Array(8).buffer);
+  doubleValue.setFloat64(0, 12345);
+  const bson = new Uint8Array([
+    0x01,
+    ...new TextEncoder().encode("a"),
+    0x00,
+    ...new Uint8Array(doubleValue.buffer),
+  ]);
+  assertEquals(
+    bson,
+    new Uint8Array([
+      0x01,
+      0x61,
+      0x00,
+      64,
+      200,
+      28,
+      128,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+    ]),
+  );
+
+  assertEquals(
+    deserializeElement(toReadonlyDataView(new DataView(bson.buffer))),
+    {
+      type: "element",
+      element: {
+        next: {},
+        value: {
+          name: {
+            notFoundEndOfFlag: true,
+            originalIfInvalidUtf8Error: undefined,
+            value: "",
+          },
+          value: {
+            type: "double",
+            value: 12345,
+          },
+        },
       },
     },
   );
