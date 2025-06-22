@@ -7,9 +7,8 @@ import {
   indexOf,
   ReadonlyDataView,
   toReadonlyDataView,
-  WithLocationAndNext,
+  ValueAndNext,
 } from "./dataView.ts";
-import { WithLocation } from "./location.ts";
 
 export type ElementValueWithInvalid =
   | { readonly type: "double"; readonly value: number | undefined }
@@ -29,62 +28,51 @@ export type StringWithInvalid = {
 };
 
 export type DocumentWithInvalid = {
-  readonly value: ReadonlyArray<WithLocation<Element>>;
+  readonly value: ReadonlyArray<Element>;
   readonly lastUnsupportedType: UnsupportedTypeInElement | undefined;
 };
 
 export type UnsupportedTypeInElement = {
-  readonly name: WithLocation<CStringWithInvalid>;
+  readonly name: CStringWithInvalid;
   readonly typeId: number | undefined;
 };
 
 export type Element = {
-  readonly name: WithLocation<CStringWithInvalid>;
-  readonly value: WithLocation<ElementValueWithInvalid>;
+  readonly name: CStringWithInvalid;
+  readonly value: ElementValueWithInvalid;
 };
 
 export const bsonBinaryToStructuredBson = (
   binary: Uint8Array,
-): WithLocation<DocumentWithInvalid> => {
+): DocumentWithInvalid => {
   return deserializeDocument(toReadonlyDataView(new DataView(binary.buffer)));
 };
 
 const deserializeDocument = (
   dataView: ReadonlyDataView,
-): WithLocation<DocumentWithInvalid> => {
+): DocumentWithInvalid => {
   const bytesSize = getInt32(dataView);
 
-  const elements: Array<WithLocation<Element>> = [];
+  const elements: Array<Element> = [];
   let dataViewCurrent = bytesSize.next;
   while (true) {
     const element = deserializeElement(dataViewCurrent);
 
     switch (element.type) {
       case "element": {
-        elements.push(element.element.withLocationValue);
+        elements.push(element.element.value);
         dataViewCurrent = element.element.next;
         break;
       }
       case "endOfElement":
         return {
-          location: {
-            startIndex: dataView.__dataView.byteOffset,
-            endIndex: dataViewCurrent.__dataView.byteOffset +
-              dataViewCurrent.__dataView.byteLength - 1,
-          },
-          value: { value: elements, lastUnsupportedType: undefined },
+          value: elements,
+          lastUnsupportedType: undefined,
         };
       case "unsupportedType": {
         return {
-          location: {
-            startIndex: dataView.__dataView.byteOffset,
-            endIndex: dataViewCurrent.__dataView.byteOffset +
-              dataViewCurrent.__dataView.byteLength - 1,
-          },
-          value: {
-            value: elements,
-            lastUnsupportedType: element.unsupportedType,
-          },
+          value: elements,
+          lastUnsupportedType: element.unsupportedType,
         };
       }
     }
@@ -96,7 +84,7 @@ const typeIdString = 0x02;
 
 type DeserializeElementResult = {
   readonly type: "element";
-  readonly element: WithLocationAndNext<Element>;
+  readonly element: ValueAndNext<Element>;
 } | {
   readonly type: "endOfElement";
 } | {
@@ -108,30 +96,21 @@ const deserializeElement = (
   dataView: ReadonlyDataView,
 ): DeserializeElementResult => {
   const typeIdAndNext = getUint8(dataView);
-  if (typeIdAndNext.withLocationValue.value === 0) {
+  if (typeIdAndNext.value === 0) {
     return { type: "endOfElement" };
   }
   const nameAndNext = parseCString(typeIdAndNext.next);
-  switch (typeIdAndNext.withLocationValue.value) {
+  switch (typeIdAndNext.value) {
     case typeIdDouble: {
       const double = getFloat64(nameAndNext.next);
       return {
         type: "element",
         element: {
-          withLocationValue: {
-            location: {
-              startIndex: typeIdAndNext.withLocationValue.location.startIndex,
-              endIndex: double.withLocationValue.location.endIndex,
-            },
+          value: {
+            name: nameAndNext.value,
             value: {
-              name: nameAndNext.withLocationValue,
-              value: {
-                location: double.withLocationValue.location,
-                value: {
-                  type: "double",
-                  value: double.withLocationValue.value,
-                },
-              },
+              type: "double",
+              value: double.value,
             },
           },
           next: double.next,
@@ -143,20 +122,11 @@ const deserializeElement = (
       return {
         type: "element",
         element: {
-          withLocationValue: {
-            location: {
-              startIndex: typeIdAndNext.withLocationValue.location.startIndex,
-              endIndex: string.withLocationValue.location.endIndex,
-            },
+          value: {
+            name: nameAndNext.value,
             value: {
-              name: nameAndNext.withLocationValue,
-              value: {
-                location: string.withLocationValue.location,
-                value: {
-                  type: "string",
-                  value: string.withLocationValue.value,
-                },
-              },
+              type: "string",
+              value: string.value,
             },
           },
           next: string.next,
@@ -167,15 +137,15 @@ const deserializeElement = (
   return {
     type: "unsupportedType",
     unsupportedType: {
-      typeId: typeIdAndNext.withLocationValue.value,
-      name: nameAndNext.withLocationValue,
+      typeId: typeIdAndNext.value,
+      name: nameAndNext.value,
     },
   };
 };
 
 const parseCString = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<CStringWithInvalid> => {
+): ValueAndNext<CStringWithInvalid> => {
   const endOfFlagLocalIndex = indexOf(dataView, 0);
   const stringDataView = createLocationAndNextDataView(
     dataView,
@@ -185,17 +155,10 @@ const parseCString = (
   );
   const stringResult = getString(stringDataView.left);
   return {
-    withLocationValue: {
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: stringResult.location.endIndex,
-      },
-      value: {
-        value: stringResult.value.value,
-        originalIfInvalidUtf8Error:
-          stringResult.value.originalIfInvalidUtf8Error,
-        notFoundEndOfFlag: endOfFlagLocalIndex === undefined,
-      },
+    value: {
+      value: stringResult.value,
+      originalIfInvalidUtf8Error: stringResult.originalIfInvalidUtf8Error,
+      notFoundEndOfFlag: endOfFlagLocalIndex === undefined,
     },
     next: stringDataView.right,
   };
@@ -203,35 +166,26 @@ const parseCString = (
 
 const parseString = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<StringWithInvalid> => {
+): ValueAndNext<StringWithInvalid> => {
   const size = getInt32(dataView);
-  if (size.withLocationValue.value === undefined) {
+  if (size.value === undefined) {
     return {
-      withLocationValue: {
-        location: size.withLocationValue.location,
-        value: {
-          value: "",
-          originalIfError: undefined,
-        },
+      value: {
+        value: "",
+        originalIfError: undefined,
       },
       next: size.next,
     };
   }
   const body = createLocationAndNextDataView(
     size.next,
-    size.withLocationValue.value,
+    size.value,
   );
   const getStringResult = getString(body.left);
   return {
-    withLocationValue: {
-      location: {
-        startIndex: size.withLocationValue.location.startIndex,
-        endIndex: getStringResult.location.endIndex,
-      },
-      value: {
-        originalIfError: getStringResult.value.originalIfInvalidUtf8Error,
-        value: getStringResult.value.value,
-      },
+    value: {
+      originalIfError: getStringResult.originalIfInvalidUtf8Error,
+      value: getStringResult.value,
     },
     next: body.right,
   };

@@ -1,5 +1,3 @@
-import { Location, WithLocation } from "./location.ts";
-
 const readonlyDataViewSymbolBland = Symbol("readonlyDataViewSymbolBland");
 
 export type ReadonlyDataView = {
@@ -14,8 +12,8 @@ export const toReadonlyDataView = (dataView: DataView): ReadonlyDataView => {
   };
 };
 
-export type WithLocationAndNext<T> = {
-  readonly withLocationValue: WithLocation<T>;
+export type ValueAndNext<T> = {
+  readonly value: T;
   readonly next: ReadonlyDataView;
 };
 
@@ -60,37 +58,18 @@ export const createLocationAndNextDataView = (
   };
 };
 
-export const dataViewToLocation = (
-  dataView: ReadonlyDataView,
-): Location => {
-  return {
-    startIndex: dataView.__dataView.byteOffset,
-    endIndex: dataView.__dataView.byteOffset + dataView.__dataView.byteLength,
-  };
-};
-
-export const getLocation = (dataView: ReadonlyDataView): Location => {
-  return {
-    startIndex: dataView.__dataView.byteOffset,
-    endIndex: dataView.__dataView.byteOffset + dataView.__dataView.byteLength,
-  };
-};
-
 /**
  * 1byte の Uint8 を取得する
  */
 export const getUint8 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number | undefined> => {
+): ValueAndNext<number | undefined> => {
   const { left, right, overflow } = createLocationAndNextDataView(
     dataView,
     1,
   );
   return {
-    withLocationValue: {
-      value: overflow ? undefined : left.__dataView.getUint8(0),
-      location: dataViewToLocation(left),
-    },
+    value: overflow ? undefined : left.__dataView.getUint8(0),
     next: right,
   };
 };
@@ -100,16 +79,13 @@ export const getUint8 = (
  */
 export const getInt32 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number | undefined> => {
+): ValueAndNext<number | undefined> => {
   const { left, right, overflow } = createLocationAndNextDataView(
     dataView,
     4,
   );
   return {
-    withLocationValue: {
-      value: overflow ? undefined : left.__dataView.getInt32(0, true),
-      location: dataViewToLocation(left),
-    },
+    value: overflow ? undefined : left.__dataView.getInt32(0, true),
     next: right,
   };
 };
@@ -119,16 +95,13 @@ export const getInt32 = (
  */
 export const getFloat64 = (
   dataView: ReadonlyDataView,
-): WithLocationAndNext<number | undefined> => {
+): ValueAndNext<number | undefined> => {
   const { left, right, overflow } = createLocationAndNextDataView(
     dataView,
     8,
   );
   return {
-    withLocationValue: {
-      value: overflow ? undefined : dataView.__dataView.getFloat64(0, true),
-      location: dataViewToLocation(left),
-    },
+    value: overflow ? undefined : left.__dataView.getFloat64(0, true),
     next: right,
   };
 };
@@ -158,10 +131,10 @@ export const indexOf = (
  */
 export const getString = (
   dataView: ReadonlyDataView,
-): WithLocation<{
+): {
   readonly value: string;
   readonly originalIfInvalidUtf8Error: Uint8Array | undefined;
-}> => {
+} => {
   const sliced = new Uint8Array(
     dataView.__dataView.buffer,
     dataView.__dataView.byteOffset,
@@ -169,25 +142,13 @@ export const getString = (
   );
   try {
     return {
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: dataView.__dataView.byteOffset + sliced.length,
-      },
-      value: {
-        value: new TextDecoder(undefined, { fatal: true }).decode(sliced),
-        originalIfInvalidUtf8Error: undefined,
-      },
+      value: new TextDecoder(undefined, { fatal: true }).decode(sliced),
+      originalIfInvalidUtf8Error: undefined,
     };
   } catch (_e) {
     return {
-      location: {
-        startIndex: dataView.__dataView.byteOffset,
-        endIndex: dataView.__dataView.byteOffset + sliced.length,
-      },
-      value: {
-        value: new TextDecoder().decode(sliced),
-        originalIfInvalidUtf8Error: sliced,
-      },
+      value: new TextDecoder().decode(sliced),
+      originalIfInvalidUtf8Error: sliced,
     };
   }
 };

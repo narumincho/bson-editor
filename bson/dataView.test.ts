@@ -23,7 +23,7 @@ Deno.test("getUint8 ok", () => {
     new DataView(new Uint8Array([0, 1, 2, 3, 4]).buffer, 1, 3),
   );
   const result = getUint8(dataView);
-  assertEquals(result.withLocationValue, {
+  assertEquals(result.value, {
     location: {
       startIndex: 1,
       endIndex: 2,
@@ -41,7 +41,7 @@ Deno.test("getInt32 ok", () => {
     new DataView(new Uint8Array([0, 3, 2, 1, 0, 1, 6]).buffer, 1, 6),
   );
   const result = getInt32(dataView);
-  assertEquals(result.withLocationValue, {
+  assertEquals(result.value, {
     location: {
       startIndex: 1,
       endIndex: 5,
@@ -59,7 +59,7 @@ Deno.test("getInt32 overflow", () => {
     new DataView(new Uint8Array([0, 3, 2, 1]).buffer, 1),
   );
   const result = getInt32(dataView);
-  assertEquals(result.withLocationValue, {
+  assertEquals(result.value, {
     location: {
       startIndex: 1,
       endIndex: 4,
