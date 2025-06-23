@@ -6,6 +6,9 @@ export type Element = {
 } | {
   readonly type: "string";
   readonly value: string;
+} | {
+  readonly type: "document";
+  readonly value: Document;
 };
 
 export const ToBsonBinary = (document: Document): Uint8Array => {
@@ -43,6 +46,11 @@ const elementToBsonBinary = (
       return {
         type: 0x02,
         value: stringToBsonString(element.value),
+      };
+    case "document":
+      return {
+        type: 0x03,
+        value: documentToBsonBinary(element.value),
       };
   }
 };

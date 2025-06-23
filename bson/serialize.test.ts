@@ -132,3 +132,58 @@ Deno.test("string and number", () => {
     expected,
   );
 });
+
+Deno.test("document in document", () => {
+  const expected = new Uint8Array([
+    26,
+    0,
+    0,
+    0,
+    3,
+    100,
+    111,
+    99,
+    0,
+    16,
+    0,
+    0,
+    0,
+    2,
+    115,
+    116,
+    114,
+    0,
+    2,
+    0,
+    0,
+    0,
+    97,
+    0,
+    0,
+    0,
+  ]);
+  assertEquals(
+    serialize({
+      doc: {
+        str: "a",
+      },
+    }),
+    expected,
+  );
+  assertEquals(
+    ToBsonBinary(
+      new Map([
+        [
+          "doc",
+          {
+            type: "document",
+            value: new Map([
+              ["str", { type: "string", value: "a" }],
+            ]),
+          },
+        ],
+      ]),
+    ),
+    expected,
+  );
+});
