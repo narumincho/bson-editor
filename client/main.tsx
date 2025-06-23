@@ -2,6 +2,7 @@ import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./editor.tsx";
+import { ToBsonBinary } from "../bson/serialize.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -75,7 +76,7 @@ const App = (): React.ReactElement => {
                 padding: 8,
               }}
               onClick={() => {
-                setBsonFile(new Uint8Array());
+                setBsonFile(ToBsonBinary(new Map()));
               }}
             >
               create from empty file
