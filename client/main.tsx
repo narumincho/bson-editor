@@ -2,7 +2,7 @@ import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./editor.tsx";
-import { ToBsonBinary } from "../bson/toBsonBinary.ts";
+import { DocumentWithError, fromBsonBinary } from "../bson/fromBsonBinary.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -21,8 +21,8 @@ const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
   const [bsonFile, setBsonFile] = React.useState<
-    Uint8Array | undefined
-  >(undefined);
+    DocumentWithError
+  >({ value: [], lastUnsupportedType: undefined });
 
   return (
     <div>
@@ -58,7 +58,7 @@ const App = (): React.ReactElement => {
             console.log(e);
             const bsonFile = await e.target.files?.[0]?.arrayBuffer();
             if (bsonFile !== undefined) {
-              setBsonFile(new Uint8Array(bsonFile));
+              setBsonFile(fromBsonBinary(new Uint8Array(bsonFile)));
             }
           }}
         />
@@ -76,14 +76,19 @@ const App = (): React.ReactElement => {
                 padding: 8,
               }}
               onClick={() => {
-                setBsonFile(ToBsonBinary(new Map()));
+                setBsonFile({ value: [], lastUnsupportedType: undefined });
               }}
             >
               create from empty file
             </button>
           </div>
         )
-        : <Editor value={bsonFile} />}
+        : (
+          <Editor
+            value={bsonFile}
+            onChange={setBsonFile}
+          />
+        )}
     </div>
   );
 };

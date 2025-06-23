@@ -15,10 +15,10 @@ import {
   ValueAndNext,
 } from "./dataView.ts";
 
-export type ElementValueWithInvalid =
+export type ElementValueWithError =
   | { readonly type: "double"; readonly value: number | undefined }
   | { readonly type: "string"; readonly value: StringWithInvalid }
-  | { readonly type: "document"; readonly value: DocumentWithInvalid }
+  | { readonly type: "document"; readonly value: DocumentWithError }
   | { readonly type: "int32"; readonly value: number };
 
 export type CStringWithInvalid = {
@@ -32,8 +32,8 @@ export type StringWithInvalid = {
   readonly originalIfError: Uint8Array | undefined;
 };
 
-export type DocumentWithInvalid = {
-  readonly value: ReadonlyArray<Element>;
+export type DocumentWithError = {
+  readonly value: ReadonlyArray<NameElementPair>;
   readonly lastUnsupportedType: UnsupportedTypeInElement | undefined;
 };
 
@@ -42,14 +42,14 @@ export type UnsupportedTypeInElement = {
   readonly typeId: number | undefined;
 };
 
-export type Element = {
+export type NameElementPair = {
   readonly name: CStringWithInvalid;
-  readonly value: ElementValueWithInvalid;
+  readonly value: ElementValueWithError;
 };
 
 export const fromBsonBinary = (
   binary: Uint8Array,
-): DocumentWithInvalid => {
+): DocumentWithError => {
   return documentFromDataView(
     toReadonlyDataView(new DataView(binary.buffer)),
   );
@@ -57,10 +57,10 @@ export const fromBsonBinary = (
 
 export const documentFromDataView = (
   dataView: ReadonlyDataView,
-): DocumentWithInvalid => {
+): DocumentWithError => {
   const bytesSize = getInt32(dataView);
 
-  const elements: Array<Element> = [];
+  const elements: Array<NameElementPair> = [];
   let dataViewCurrent = bytesSize.next;
   while (true) {
     const element = elementFromDataView(dataViewCurrent);
@@ -91,7 +91,7 @@ const typeIdString = 0x02;
 
 type DeserializeElementResult = {
   readonly type: "element";
-  readonly element: ValueAndNext<Element>;
+  readonly element: ValueAndNext<NameElementPair>;
 } | {
   readonly type: "endOfElement";
 } | {

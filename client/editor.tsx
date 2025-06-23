@@ -1,34 +1,28 @@
 import React from "react";
 
 import {
-  DocumentWithInvalid,
-  ElementValueWithInvalid,
-  fromBsonBinary,
+  DocumentWithError,
+  ElementValueWithError as ElementValueWithError,
 } from "../bson/fromBsonBinary.ts";
 
 type Selection = {
   readonly type: "tree";
-} | {
-  readonly type: "binary";
 };
 
-export const Editor = (props: {
-  value: Uint8Array;
+export const Editor = ({ value, onChange }: {
+  readonly value: DocumentWithError;
+  readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
-  const structuredBson = React.useMemo(() =>
-    fromBsonBinary(
-      new Uint8Array(props.value),
-    ), [props.value]);
-
-  return <DocumentView structuredBson={structuredBson} />;
+  return <DocumentView value={value} onChange={onChange} />;
 };
 
-const DocumentView = (props: {
-  structuredBson: DocumentWithInvalid;
+const DocumentView = ({ value, onChange }: {
+  readonly value: DocumentWithError;
+  readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
   return (
     <div>
-      {props.structuredBson.value.map((element, index) => (
+      {value.value.map((element, index) => (
         <div
           key={`${element.name.value}-${index}`}
           style={{
@@ -43,20 +37,39 @@ const DocumentView = (props: {
               padding: 8,
             }}
           >
-            <ElementView value={element.value} />
+            <ElementView
+              value={element.value}
+              onChange={(element) => {
+                onChange({
+                  lastUnsupportedType: value.lastUnsupportedType,
+                  value: [
+                    ...value.value.slice(0, index),
+                    {
+                      name: {
+                        value: "",
+                        notFoundEndOfFlag: false,
+                        originalIfInvalidUtf8Error: undefined,
+                      },
+                      value: element,
+                    },
+                    ...value.value.slice(index + 1),
+                  ],
+                });
+              }}
+            />
           </div>
         </div>
       ))}
-      {props.structuredBson.lastUnsupportedType !== undefined
+      {value.lastUnsupportedType !== undefined
         ? (
           <div
-            key={`${props.structuredBson.lastUnsupportedType.name.value}-lastUnsupportedType`}
+            key={`${value.lastUnsupportedType.name.value}-lastUnsupportedType`}
             style={{
               padding: 16,
             }}
           >
             <div style={{ whiteSpace: "pre" }}>
-              "{props.structuredBson.lastUnsupportedType.name.value}"
+              "{value.lastUnsupportedType.name.value}"
             </div>
             <div
               style={{
@@ -68,12 +81,34 @@ const DocumentView = (props: {
           </div>
         )
         : undefined}
+      <button
+        type="button"
+        onClick={() => {
+          onChange({
+            lastUnsupportedType: value.lastUnsupportedType,
+            value: [
+              ...value.value,
+              {
+                name: {
+                  value: "",
+                  notFoundEndOfFlag: false,
+                  originalIfInvalidUtf8Error: undefined,
+                },
+                value: { type: "double", value: 0 },
+              },
+            ],
+          });
+        }}
+      >
+        +
+      </button>
     </div>
   );
 };
 
 const ElementView = (props: {
-  value: ElementValueWithInvalid;
+  value: ElementValueWithError;
+  onChange: (value: ElementValueWithError) => void;
 }): React.ReactElement => {
   switch (props.value.type) {
     case "double":
@@ -98,7 +133,13 @@ const ElementView = (props: {
       return (
         <div>
           <DocumentView
-            structuredBson={props.value.value}
+            value={props.value.value}
+            onChange={(value) => {
+              props.onChange({
+                type: "document",
+                value,
+              });
+            }}
           />
         </div>
       );
