@@ -1,11 +1,10 @@
-import React from "https://esm.sh/react@18.3.1?pin=v135";
-import { WithLocation } from "../bson/location.ts";
+import React from "react";
 
 import {
   bsonBinaryToStructuredBson,
   DocumentWithInvalid,
   ElementValueWithInvalid,
-} from "../bson/main.ts";
+} from "../bson/deserialize.ts";
 
 type Selection = {
   readonly type: "tree";
@@ -34,7 +33,7 @@ export const Editor = (props: {
       }}
     >
       <div>
-        <DocumentView structuredBson={structuredBson.value} />
+        <DocumentView structuredBson={structuredBson} />
       </div>
       <div
         style={{
@@ -92,22 +91,20 @@ const DocumentView = (props: {
     <div>
       {props.structuredBson.value.map((element, index) => (
         <div
-          key={`${element.value.name.value.value}-${index}`}
+          key={`${element.name.value}-${index}`}
           style={{
             padding: 16,
           }}
         >
           <div style={{ whiteSpace: "pre" }}>
-            "{element.value.name.value.value}"
+            "{element.name.value}"
           </div>
           <div
             style={{
               padding: 8,
             }}
           >
-            <ElementView
-              value={element.value.value.value}
-            />
+            <ElementView value={element.value} />
           </div>
         </div>
       ))}
@@ -120,7 +117,7 @@ const DocumentView = (props: {
             }}
           >
             <div style={{ whiteSpace: "pre" }}>
-              "{props.structuredBson.lastUnsupportedType.name.value.value}"
+              "{props.structuredBson.lastUnsupportedType.name.value}"
             </div>
             <div
               style={{

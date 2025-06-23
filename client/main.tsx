@@ -1,7 +1,8 @@
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
-import React from "https://esm.sh/react@18.3.1?pin=v135";
-import { createRoot } from "https://esm.sh/react-dom@18.3.1/client?pin=v135";
+import React from "react";
+import { createRoot } from "react-dom/client";
 import { Editor } from "./editor.tsx";
+import { ToBsonBinary } from "../bson/serialize.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -70,11 +71,12 @@ const App = (): React.ReactElement => {
             }}
           >
             <button
+              type="button"
               style={{
                 padding: 8,
               }}
               onClick={() => {
-                setBsonFile(new Uint8Array());
+                setBsonFile(ToBsonBinary(new Map()));
               }}
             >
               create from empty file
