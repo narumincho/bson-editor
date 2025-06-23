@@ -1,6 +1,6 @@
 import { serialize } from "bson";
 import { assertEquals } from "@std/assert";
-import { Element, ToBsonBinary } from "./serialize.ts";
+import { Element, ToBsonBinary } from "./toBsonBinary.ts";
 
 Deno.test("empty", () => {
   const expected = new Uint8Array([5, 0, 0, 0, 0]);

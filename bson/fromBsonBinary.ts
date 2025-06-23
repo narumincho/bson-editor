@@ -47,13 +47,15 @@ export type Element = {
   readonly value: ElementValueWithInvalid;
 };
 
-export const bsonBinaryToStructuredBson = (
+export const fromBsonBinary = (
   binary: Uint8Array,
 ): DocumentWithInvalid => {
-  return deserializeDocument(toReadonlyDataView(new DataView(binary.buffer)));
+  return documentFromDataView(
+    toReadonlyDataView(new DataView(binary.buffer)),
+  );
 };
 
-export const deserializeDocument = (
+export const documentFromDataView = (
   dataView: ReadonlyDataView,
 ): DocumentWithInvalid => {
   const bytesSize = getInt32(dataView);
@@ -61,7 +63,7 @@ export const deserializeDocument = (
   const elements: Array<Element> = [];
   let dataViewCurrent = bytesSize.next;
   while (true) {
-    const element = deserializeElement(dataViewCurrent);
+    const element = elementFromDataView(dataViewCurrent);
 
     switch (element.type) {
       case "element": {
@@ -97,7 +99,7 @@ type DeserializeElementResult = {
   readonly unsupportedType: UnsupportedTypeInElement;
 };
 
-export const deserializeElement = (
+export const elementFromDataView = (
   dataView: ReadonlyDataView,
 ): DeserializeElementResult => {
   const typeIdAndNext = getUint8(dataView);

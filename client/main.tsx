@@ -2,7 +2,7 @@ import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./editor.tsx";
-import { ToBsonBinary } from "../bson/serialize.ts";
+import { ToBsonBinary } from "../bson/toBsonBinary.ts";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
