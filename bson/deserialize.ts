@@ -1,3 +1,8 @@
+/**
+ * https://www.npmjs.com/package/bson から Node.js への依存をなくして, 型を強化した bson ライブラリ
+ *
+ * @module
+ */
 import {
   createLocationAndNextDataView,
   getFloat64,
@@ -143,10 +148,11 @@ export const deserializeElement = (
   };
 };
 
-const parseCString = (
+export const parseCString = (
   dataView: ReadonlyDataView,
 ): ValueAndNext<CStringWithInvalid> => {
   const endOfFlagLocalIndex = indexOf(dataView, 0);
+  // ここらへんがおかしい原因っぽい
   const stringDataView = createLocationAndNextDataView(
     dataView,
     endOfFlagLocalIndex === undefined
@@ -160,7 +166,10 @@ const parseCString = (
       originalIfInvalidUtf8Error: stringResult.originalIfInvalidUtf8Error,
       notFoundEndOfFlag: endOfFlagLocalIndex === undefined,
     },
-    next: stringDataView.right,
+    next: createLocationAndNextDataView(
+      stringDataView.right,
+      1,
+    ).right,
   };
 };
 
@@ -169,6 +178,7 @@ const parseString = (
 ): ValueAndNext<StringWithInvalid> => {
   const size = getInt32(dataView);
   if (size.value === undefined) {
+    // TODO
     return {
       value: {
         value: "",
@@ -179,7 +189,7 @@ const parseString = (
   }
   const body = createLocationAndNextDataView(
     size.next,
-    size.value,
+    size.value - 1,
   );
   const getStringResult = getString(body.left);
   return {
@@ -187,6 +197,6 @@ const parseString = (
       originalIfError: getStringResult.originalIfInvalidUtf8Error,
       value: getStringResult.value,
     },
-    next: body.right,
+    next: createLocationAndNextDataView(body.right, 1).right,
   };
 };

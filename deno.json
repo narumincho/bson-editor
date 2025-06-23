@@ -29,6 +29,7 @@
     "@std/path": "jsr:@std/path@^1.1.0",
     "@types/react": "npm:@types/react@^19.1.8",
     "@types/react-dom": "npm:@types/react-dom@^19.1.6",
+    "bson": "npm:bson@^6.10.4",
     "esbuild": "npm:esbuild@^0.25.5",
     "react": "npm:react@^19.1.0",
     "react-dom": "npm:react-dom@^19.1.0"

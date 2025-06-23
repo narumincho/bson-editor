@@ -4,7 +4,7 @@ import {
   bsonBinaryToStructuredBson,
   DocumentWithInvalid,
   ElementValueWithInvalid,
-} from "../bson/main.ts";
+} from "../bson/deserialize.ts";
 
 type Selection = {
   readonly type: "tree";
