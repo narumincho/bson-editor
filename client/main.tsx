@@ -1,8 +1,9 @@
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { Editor } from "./editor.tsx";
+import { Editor } from "./component/Editor.tsx";
 import { DocumentWithError, fromBsonBinary } from "../bson/fromBsonBinary.ts";
+import { Header } from "./component/Header.tsx";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -26,69 +27,19 @@ const App = (): React.ReactElement => {
 
   return (
     <div>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: 8,
-          alignItems: "center",
-          backgroundColor: "#434242",
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: 24,
-          }}
-        >
-          nBSON Editor
-        </h1>
-        {vscodeWebviewApi === undefined
-          ? <a href="https://github.com/narumincho/bson-editor">GitHub</a>
-          : undefined}
-      </header>
-      <div
-        style={{
-          padding: 12,
-        }}
-      >
-        <input
-          type="file"
-          onChange={async (e) => {
-            console.log(e);
-            const bsonFile = await e.target.files?.[0]?.arrayBuffer();
-            if (bsonFile !== undefined) {
-              setBsonFile(fromBsonBinary(new Uint8Array(bsonFile)));
-            }
-          }}
-        />
-      </div>
-      {bsonFile === undefined
+      {vscodeWebviewApi === undefined
         ? (
-          <div
-            style={{
-              padding: 12,
+          <Header
+            onOpenFile={(file) => {
+              setBsonFile(fromBsonBinary(file));
             }}
-          >
-            <button
-              type="button"
-              style={{
-                padding: 8,
-              }}
-              onClick={() => {
-                setBsonFile({ value: [], lastUnsupportedType: undefined });
-              }}
-            >
-              create from empty file
-            </button>
-          </div>
-        )
-        : (
-          <Editor
-            value={bsonFile}
-            onChange={setBsonFile}
           />
-        )}
+        )
+        : undefined}
+      <Editor
+        value={bsonFile}
+        onChange={setBsonFile}
+      />
     </div>
   );
 };

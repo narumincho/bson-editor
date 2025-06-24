@@ -3,7 +3,7 @@ import React from "react";
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
-} from "../bson/fromBsonBinary.ts";
+} from "../../bson/fromBsonBinary.ts";
 
 type Selection = {
   readonly type: "tree";
