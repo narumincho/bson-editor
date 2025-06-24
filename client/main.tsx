@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { Editor } from "./component/Editor.tsx";
 import { DocumentWithError, fromBsonBinary } from "../bson/fromBsonBinary.ts";
 import { Header } from "./component/Header.tsx";
+import { Initial } from "./component/Inital.tsx";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -22,20 +23,21 @@ const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
   const [bsonFile, setBsonFile] = React.useState<
-    DocumentWithError
-  >({ value: [], lastUnsupportedType: undefined });
+    DocumentWithError | undefined
+  >(undefined);
+
+  if (bsonFile === undefined) {
+    return (
+      <div>
+        <Header />
+        <Initial onSelect={setBsonFile} />
+      </div>
+    );
+  }
 
   return (
     <div>
-      {vscodeWebviewApi === undefined
-        ? (
-          <Header
-            onOpenFile={(file) => {
-              setBsonFile(fromBsonBinary(file));
-            }}
-          />
-        )
-        : undefined}
+      {vscodeWebviewApi === undefined ? <Header /> : undefined}
       <Editor
         value={bsonFile}
         onChange={setBsonFile}

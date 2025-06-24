@@ -1,8 +1,6 @@
 import React from "react";
 
-export const Header = (
-  { onOpenFile }: { onOpenFile: (binary: Uint8Array) => void },
-) => {
+export const Header = () => {
   return (
     <header
       style={{
@@ -21,10 +19,6 @@ export const Header = (
         <input
           type="file"
           onChange={async (e) => {
-            const bsonFile = await e.target.files?.[0]?.arrayBuffer();
-            if (bsonFile !== undefined) {
-              onOpenFile(new Uint8Array(bsonFile));
-            }
           }}
           onPaste={(e) => {
             console.log("test paste", e);
