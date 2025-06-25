@@ -1,27 +1,44 @@
-import React from "react";
+import React, { useState } from "react";
 
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
 } from "../../bson/fromBsonBinary.ts";
+import { Controller } from "./Controller.tsx";
 
-type Selection = {
-  readonly type: "tree";
+type Selection = { readonly type: "self" } | {
+  readonly type: "child";
+  readonly childIndex: number;
+  readonly selection: Selection;
 };
 
 export const Editor = ({ value, onChange }: {
   readonly value: DocumentWithError;
   readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
-  return <DocumentView value={value} onChange={onChange} />;
+  const selection = useState<Selection>({ type: "self" });
+
+  return (
+    <div>
+      <DocumentView value={value} selection={selection} onChange={onChange} />
+      <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
+        <Controller onReplace={() => {}} />
+      </div>
+    </div>
+  );
 };
 
-const DocumentView = ({ value, onChange }: {
+const DocumentView = ({ value, selection, onChange }: {
   readonly value: DocumentWithError;
+  readonly selection: Selection;
   readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
   return (
-    <div>
+    <div
+      style={{
+        background: selection.type === "self" ? "skyblue" : undefined,
+      }}
+    >
       {value.value.map((element, index) => (
         <div
           key={`${element.name.value}-${index}`}
@@ -39,6 +56,10 @@ const DocumentView = ({ value, onChange }: {
           >
             <ElementView
               value={element.value}
+              selection={selection.type === "child" &&
+                  selection.childIndex === index
+                ? selection.selection
+                : { type: "self" }}
               onChange={(element) => {
                 onChange({
                   lastUnsupportedType: value.lastUnsupportedType,
@@ -108,6 +129,7 @@ const DocumentView = ({ value, onChange }: {
 
 const ElementView = (props: {
   value: ElementValueWithError;
+  readonly selection: Selection;
   onChange: (value: ElementValueWithError) => void;
 }): React.ReactElement => {
   switch (props.value.type) {

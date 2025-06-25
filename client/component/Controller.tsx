@@ -14,9 +14,9 @@ const getFileFromDataTransferItemList = (itemList: DataTransferItemList) => {
   items.find((e) => e.getAsFile());
 };
 
-export const Initial = ({ onSelect }: {
-  readonly onSelect: (document: DocumentWithError) => void;
-}) => {
+export const Controller = (
+  { onReplace }: { onReplace: (document: DocumentWithError) => void },
+) => {
   useEffect(() => {
     const listener = (e: ClipboardEvent) => {
       if (!e.clipboardData) {
@@ -45,12 +45,13 @@ export const Initial = ({ onSelect }: {
       style={{
         display: "flex",
         gap: 8,
+        padding: 8,
       }}
     >
       <button
         type="button"
         onClick={() => {
-          onSelect({ value: [], lastUnsupportedType: undefined });
+          onReplace({ value: [], lastUnsupportedType: undefined });
         }}
       >
         from empty
@@ -58,7 +59,7 @@ export const Initial = ({ onSelect }: {
       <button
         type="button"
         onClick={() => {
-          onSelect({
+          onReplace({
             value: [
               {
                 name: {
@@ -97,7 +98,7 @@ export const Initial = ({ onSelect }: {
           onChange={async (e) => {
             const bsonFile = await e.target.files?.[0]?.arrayBuffer();
             if (bsonFile !== undefined) {
-              onSelect(fromBsonBinary(new Uint8Array(bsonFile)));
+              onReplace(fromBsonBinary(new Uint8Array(bsonFile)));
             }
           }}
         />
