@@ -25,18 +25,6 @@ const App = (): React.ReactElement => {
     DocumentWithError
   >({ value: [], lastUnsupportedType: undefined });
 
-  useEffect(() => {
-    const handleKeyDown = (ev: KeyboardEvent) => {
-      console.log(ev.code);
-    };
-
-    addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <div>
       {vscodeWebviewApi === undefined ? <Header /> : undefined}

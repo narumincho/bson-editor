@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   DocumentWithError,
@@ -39,18 +39,17 @@ const replace = (
               originalIfInvalidUtf8Error:
                 nameElementPair.name.originalIfInvalidUtf8Error,
             },
-            value:
-              selection.selection.type === "child" &&
+            value: selection.selection.type === "child" &&
                 nameElementPair.value.type === "document"
-                ? {
-                  type: "document",
-                  value: replace(
-                    selection.selection,
-                    element,
-                    nameElementPair.value.value,
-                  ),
-                }
-                : element,
+              ? {
+                type: "document",
+                value: replace(
+                  selection.selection,
+                  element,
+                  nameElementPair.value.value,
+                ),
+              }
+              : element,
           },
         ),
         lastUnsupportedType: document.lastUnsupportedType,
@@ -64,6 +63,21 @@ export const Editor = ({ value, onChange }: {
   readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
   const [selection, setSelection] = useState<Selection>({ type: "self" });
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.code) {
+        case "Enter":
+          selection;
+      }
+    };
+
+    addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div>
