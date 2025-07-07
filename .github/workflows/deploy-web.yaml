@@ -15,3 +15,4 @@ jobs:
         with:
           command: pages deploy ./webDistribution --project-name=bson-editor --branch ${{ github.ref_name }}
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4.23.0"
