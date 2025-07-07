@@ -8,11 +8,10 @@
     "lib": ["dom", "dom.iterable", "deno.ns", "deno.unstable"]
   },
   "tasks": {
-    "build-client": {
+    "build-web": {
       "command": "deno run --check -A ./web/build.tsx",
       "description": "Build code to run in a web browser"
-    },
-    "run-server": "deno run --check --watch -A ./web/local.ts"
+    }
   },
   "imports": {
     "@deno/esbuild-plugin": "jsr:@deno/esbuild-plugin@^1.0.1",
