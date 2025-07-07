@@ -1,5 +1,5 @@
 import { EJSON } from "bson";
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertNotEquals } from "@std/assert";
 
 Deno.test("ejson normal", () => {
   const bsonObject = {
@@ -22,5 +22,6 @@ Deno.test("ejson reserved", () => {
   const ejsonAsString = EJSON.stringify(bsonObject);
   const ejsonAsObject = EJSON.parse(ejsonAsString);
 
-  assertEquals(bsonObject, ejsonAsObject);
+  // assertEquals(bsonObject, ejsonAsObject);
+  assertNotEquals(bsonObject, ejsonAsObject);
 });

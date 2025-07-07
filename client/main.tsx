@@ -1,5 +1,5 @@
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./component/Editor.tsx";
 import { DocumentWithError } from "../bson/fromBsonBinary.ts";
@@ -25,15 +25,21 @@ const App = (): React.ReactElement => {
     DocumentWithError
   >({ value: [], lastUnsupportedType: undefined });
 
+  useEffect(() => {
+    const handleKeyDown = (ev: KeyboardEvent) => {
+      console.log(ev.code);
+    };
+
+    addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <div>
-      {vscodeWebviewApi === undefined
-        ? (
-          <div style={{ position: "fixed", top: 0, width: "100%" }}>
-            <Header />
-          </div>
-        )
-        : undefined}
+      {vscodeWebviewApi === undefined ? <Header /> : undefined}
       <Editor
         value={bsonFile}
         onChange={setBsonFile}

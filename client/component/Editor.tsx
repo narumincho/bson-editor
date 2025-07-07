@@ -16,29 +16,32 @@ export const Editor = ({ value, onChange }: {
   readonly value: DocumentWithError;
   readonly onChange: (value: DocumentWithError) => void;
 }): React.ReactElement => {
-  const selection = useState<Selection>({ type: "self" });
+  const [selection, setSelection] = useState<Selection>({ type: "self" });
 
   return (
     <div>
-      <DocumentView value={value} selection={selection} onChange={onChange} />
+      <DocumentView
+        value={value}
+        selection={selection}
+        onChange={onChange}
+        onSelectionChange={setSelection}
+      />
       <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
-        <Controller onReplace={() => {}} />
+        <Controller onReplace={onChange} />
       </div>
     </div>
   );
 };
 
-const DocumentView = ({ value, selection, onChange }: {
+const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
   readonly value: DocumentWithError;
-  readonly selection: Selection;
+  readonly selection: Selection | undefined;
   readonly onChange: (value: DocumentWithError) => void;
+  readonly onSelectionChange: (selection: Selection) => void;
 }): React.ReactElement => {
   return (
-    <div
-      style={{
-        background: selection.type === "self" ? "skyblue" : undefined,
-      }}
-    >
+    <div>
+      document
       {value.value.map((element, index) => (
         <div
           key={`${element.name.value}-${index}`}
@@ -54,12 +57,12 @@ const DocumentView = ({ value, selection, onChange }: {
               padding: 8,
             }}
           >
-            <ElementView
+            <ElementViewContainer
               value={element.value}
-              selection={selection.type === "child" &&
+              selection={selection?.type === "child" &&
                   selection.childIndex === index
                 ? selection.selection
-                : { type: "self" }}
+                : undefined}
               onChange={(element) => {
                 onChange({
                   lastUnsupportedType: value.lastUnsupportedType,
@@ -75,6 +78,13 @@ const DocumentView = ({ value, selection, onChange }: {
                     },
                     ...value.value.slice(index + 1),
                   ],
+                });
+              }}
+              onSelectionChange={function (selection: Selection): void {
+                onSelectionChange({
+                  type: "child",
+                  childIndex: index,
+                  selection,
                 });
               }}
             />
@@ -127,49 +137,79 @@ const DocumentView = ({ value, selection, onChange }: {
   );
 };
 
-const ElementView = (props: {
-  value: ElementValueWithError;
-  readonly selection: Selection;
-  onChange: (value: ElementValueWithError) => void;
-}): React.ReactElement => {
-  switch (props.value.type) {
+const ElementViewContainer = (
+  { value, selection, onChange, onSelectionChange }: {
+    readonly value: ElementValueWithError;
+    readonly selection: Selection | undefined;
+    readonly onChange: (value: ElementValueWithError) => void;
+    readonly onSelectionChange: (selection: Selection) => void;
+  },
+): React.ReactElement => {
+  return (
+    <div
+      onClick={(e) => {
+        console.log("onClick", e);
+        onSelectionChange({ type: "self" });
+      }}
+      style={selection?.type === "self"
+        ? {
+          outline: "skyblue",
+          outlineStyle: "solid",
+        }
+        : {}}
+    >
+      <ElementView
+        value={value}
+        selection={selection}
+        onChange={onChange}
+        onSelectionChange={onSelectionChange}
+      />
+    </div>
+  );
+};
+
+const ElementView = (
+  { value, selection, onChange, onSelectionChange }: {
+    readonly value: ElementValueWithError;
+    readonly selection: Selection | undefined;
+    readonly onChange: (value: ElementValueWithError) => void;
+    readonly onSelectionChange: (selection: Selection) => void;
+  },
+): React.ReactElement => {
+  switch (value.type) {
     case "double":
       return (
         <div>
-          double {props.value.value}
+          double {value.value}
         </div>
       );
     case "int32":
       return (
         <div>
-          int32 {props.value.value}
+          int32 {value.value}
         </div>
       );
     case "string":
       return (
         <div>
-          string {props.value.value.value}
+          string {value.value.value}
         </div>
       );
     case "document":
       return (
-        <div>
-          <DocumentView
-            value={props.value.value}
-            onChange={(value) => {
-              props.onChange({
-                type: "document",
-                value,
-              });
-            }}
-          />
-        </div>
+        <DocumentView
+          value={value.value}
+          selection={selection}
+          onChange={(value) => {
+            onChange({
+              type: "document",
+              value,
+            });
+          }}
+          onSelectionChange={onSelectionChange}
+        />
       );
     default:
-      return (
-        <div>
-          unsupported type
-        </div>
-      );
+      return <div>unsupported type</div>;
   }
 };

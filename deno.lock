@@ -13,6 +13,7 @@
     "npm:@types/node@*": "22.15.15",
     "npm:@types/react-dom@^19.1.6": "19.1.6_@types+react@19.1.8",
     "npm:@types/react@^19.1.8": "19.1.8",
+    "npm:@types/vscode-webview@1.57.5": "1.57.5",
     "npm:bson@^6.10.4": "6.10.4",
     "npm:esbuild@~0.25.5": "0.25.5",
     "npm:react-dom@^19.1.0": "19.1.0_react@19.1.0",
@@ -201,6 +202,9 @@
       "dependencies": [
         "csstype"
       ]
+    },
+    "@types/vscode-webview@1.57.5": {
+      "integrity": "sha512-iBAUYNYkz+uk1kdsq05fEcoh8gJmwT3lqqFPN7MGyjQ3HVloViMdo7ZJ8DFIP8WOK74PjOEilosqAyxV2iUFUw=="
     },
     "bson@6.10.4": {
       "integrity": "sha512-WIsKqkSC0ABoBJuT1LEX+2HEvNmNKKgnTAyd0fL8qzK4SH2i9NXg+t08YtdZp/V9IZ33cxe3iV4yM0qg8lMQng=="
