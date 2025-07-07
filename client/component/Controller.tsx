@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import {
-  DocumentWithError,
+  ElementValueWithError,
   fromBsonBinary,
 } from "../../bson/fromBsonBinary.ts";
 
@@ -15,7 +15,7 @@ const getFileFromDataTransferItemList = (itemList: DataTransferItemList) => {
 };
 
 export const Controller = (
-  { onReplace }: { onReplace: (document: DocumentWithError) => void },
+  { onReplace }: { onReplace: (document: ElementValueWithError) => void },
 ) => {
   useEffect(() => {
     const listener = (e: ClipboardEvent) => {
@@ -51,7 +51,10 @@ export const Controller = (
       <button
         type="button"
         onClick={() => {
-          onReplace({ value: [], lastUnsupportedType: undefined });
+          onReplace({
+            type: "document",
+            value: { value: [], lastUnsupportedType: undefined },
+          });
         }}
       >
         from empty
@@ -60,31 +63,34 @@ export const Controller = (
         type="button"
         onClick={() => {
           onReplace({
-            value: [
-              {
-                name: {
-                  value: "text",
-                  notFoundEndOfFlag: false,
-                  originalIfInvalidUtf8Error: undefined,
+            type: "document",
+            value: {
+              value: [
+                {
+                  name: {
+                    value: "text",
+                    notFoundEndOfFlag: false,
+                    originalIfInvalidUtf8Error: undefined,
+                  },
+                  value: {
+                    type: "string",
+                    value: { value: "hello world", originalIfError: undefined },
+                  },
                 },
-                value: {
-                  type: "string",
-                  value: { value: "hello world", originalIfError: undefined },
+                {
+                  name: {
+                    value: "64bit floating number",
+                    notFoundEndOfFlag: false,
+                    originalIfInvalidUtf8Error: undefined,
+                  },
+                  value: {
+                    type: "double",
+                    value: 123.456,
+                  },
                 },
-              },
-              {
-                name: {
-                  value: "64bit floating number",
-                  notFoundEndOfFlag: false,
-                  originalIfInvalidUtf8Error: undefined,
-                },
-                value: {
-                  type: "double",
-                  value: 123.456,
-                },
-              },
-            ],
-            lastUnsupportedType: undefined,
+              ],
+              lastUnsupportedType: undefined,
+            },
           });
         }}
       >
@@ -98,7 +104,10 @@ export const Controller = (
           onChange={async (e) => {
             const bsonFile = await e.target.files?.[0]?.arrayBuffer();
             if (bsonFile !== undefined) {
-              onReplace(fromBsonBinary(new Uint8Array(bsonFile)));
+              onReplace({
+                type: "document",
+                value: fromBsonBinary(new Uint8Array(bsonFile)),
+              });
             }
           }}
         />

@@ -12,6 +12,53 @@ type Selection = { readonly type: "self" } | {
   readonly selection: Selection;
 };
 
+const replace = (
+  selection: Selection,
+  element: ElementValueWithError,
+  document: DocumentWithError,
+): DocumentWithError => {
+  switch (selection.type) {
+    case "self":
+      if (element.type === "document") {
+        return element.value;
+      }
+      return document;
+    case "child": {
+      const nameElementPair = document.value[selection.childIndex];
+      if (nameElementPair === undefined) {
+        return document;
+      }
+      return {
+        value: document.value.with(
+          selection.childIndex,
+          {
+            name: {
+              value: nameElementPair.name.value ?? "???",
+              notFoundEndOfFlag: nameElementPair.name
+                .notFoundEndOfFlag ?? false,
+              originalIfInvalidUtf8Error:
+                nameElementPair.name.originalIfInvalidUtf8Error,
+            },
+            value:
+              selection.selection.type === "child" &&
+                nameElementPair.value.type === "document"
+                ? {
+                  type: "document",
+                  value: replace(
+                    selection.selection,
+                    element,
+                    nameElementPair.value.value,
+                  ),
+                }
+                : element,
+          },
+        ),
+        lastUnsupportedType: document.lastUnsupportedType,
+      };
+    }
+  }
+};
+
 export const Editor = ({ value, onChange }: {
   readonly value: DocumentWithError;
   readonly onChange: (value: DocumentWithError) => void;
@@ -27,7 +74,11 @@ export const Editor = ({ value, onChange }: {
         onSelectionChange={setSelection}
       />
       <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
-        <Controller onReplace={onChange} />
+        <Controller
+          onReplace={(e) => {
+            onChange(replace(selection, e, value));
+          }}
+        />
       </div>
     </div>
   );
@@ -148,7 +199,7 @@ const ElementViewContainer = (
   return (
     <div
       onClick={(e) => {
-        console.log("onClick", e);
+        e.stopPropagation();
         onSelectionChange({ type: "self" });
       }}
       style={selection?.type === "self"
