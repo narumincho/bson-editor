@@ -1,0 +1,14 @@
+name: deploy-web
+on:
+  - pull_request
+jobs:
+  main-job:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+      - run: deno run --check -A ./web/build.tsx
+      - run: deno run -A npm:wrangler pages deploy ./webDistribution --project=bson-editor --branch $GITHUB_REF_NAME

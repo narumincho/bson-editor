@@ -36,7 +36,7 @@ ${
         <head>
           <meta charSet="UTF-8" />
           <title>nBson Editor</title>
-          <script defer src={scriptFileName}></script>
+          <script defer src={`./${scriptFileName}`}></script>
           <style>
             {`
 :root {
