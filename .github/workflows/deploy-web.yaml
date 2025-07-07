@@ -11,4 +11,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: denoland/setup-deno@v2
       - run: deno run --check -A ./web/build.tsx
-      - run: deno run -A npm:wrangler pages deploy ./webDistribution --project=bson-editor --branch $GITHUB_REF_NAME
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          command: pages deploy ./webDistribution --project-name=bson-editor --branch ${{ github.ref_name }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
