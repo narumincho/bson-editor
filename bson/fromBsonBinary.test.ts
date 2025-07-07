@@ -1,15 +1,15 @@
 import { toReadonlyDataView } from "./dataView.ts";
 import {
-  bsonBinaryToStructuredBson,
-  deserializeElement,
+  elementFromDataView,
+  fromBsonBinary,
   parseCString,
-} from "./deserialize.ts";
+} from "./fromBsonBinary.ts";
 import { assertEquals } from "@std/assert";
 import { serialize } from "bson";
 
 Deno.test("bsonBinaryToStructuredBson", () => {
   assertEquals(
-    bsonBinaryToStructuredBson(serialize({ a: "サンプルテキスト" })),
+    fromBsonBinary(serialize({ a: "サンプルテキスト" })),
     {
       value: [
         {
@@ -49,7 +49,7 @@ Deno.test("parseCString", () => {
 
 Deno.test("element", () => {
   assertEquals(
-    deserializeElement(
+    elementFromDataView(
       toReadonlyDataView(new DataView(new Uint8Array([0x00]).buffer)),
     ),
     { type: "endOfElement" },
@@ -81,7 +81,7 @@ Deno.test("element", () => {
   );
 
   assertEquals(
-    deserializeElement(toReadonlyDataView(new DataView(bson.buffer))),
+    elementFromDataView(toReadonlyDataView(new DataView(bson.buffer))),
     {
       type: "element",
       element: {

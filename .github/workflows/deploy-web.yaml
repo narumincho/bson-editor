@@ -1,0 +1,18 @@
+name: deploy-web
+on:
+  - pull_request
+jobs:
+  main-job:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+      - run: deno run --check -A ./web/build.tsx
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          command: pages deploy ./webDistribution --project-name=bson-editor --branch ${{ github.ref_name }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          wranglerVersion: "4.23.0"

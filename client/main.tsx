@@ -1,8 +1,9 @@
 import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
-import React from "react";
+import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
-import { Editor } from "./editor.tsx";
-import { ToBsonBinary } from "../bson/serialize.ts";
+import { Editor } from "./component/Editor.tsx";
+import { DocumentWithError } from "../bson/fromBsonBinary.ts";
+import { Header } from "./component/Header.tsx";
 
 const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
   if (typeof globalThis.acquireVsCodeApi === "function") {
@@ -21,69 +22,28 @@ const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
   const [bsonFile, setBsonFile] = React.useState<
-    Uint8Array | undefined
-  >(undefined);
+    DocumentWithError
+  >({ value: [], lastUnsupportedType: undefined });
+
+  useEffect(() => {
+    const handleKeyDown = (ev: KeyboardEvent) => {
+      console.log(ev.code);
+    };
+
+    addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div>
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          padding: 8,
-          alignItems: "center",
-          backgroundColor: "#434242",
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: 24,
-          }}
-        >
-          nBSON Editor
-        </h1>
-        {vscodeWebviewApi === undefined
-          ? <a href="https://github.com/narumincho/bson-editor">GitHub</a>
-          : undefined}
-      </header>
-      <div
-        style={{
-          padding: 12,
-        }}
-      >
-        <input
-          type="file"
-          onChange={async (e) => {
-            console.log(e);
-            const bsonFile = await e.target.files?.[0]?.arrayBuffer();
-            if (bsonFile !== undefined) {
-              setBsonFile(new Uint8Array(bsonFile));
-            }
-          }}
-        />
-      </div>
-      {bsonFile === undefined
-        ? (
-          <div
-            style={{
-              padding: 12,
-            }}
-          >
-            <button
-              type="button"
-              style={{
-                padding: 8,
-              }}
-              onClick={() => {
-                setBsonFile(ToBsonBinary(new Map()));
-              }}
-            >
-              create from empty file
-            </button>
-          </div>
-        )
-        : <Editor value={bsonFile} />}
+      {vscodeWebviewApi === undefined ? <Header /> : undefined}
+      <Editor
+        value={bsonFile}
+        onChange={setBsonFile}
+      />
     </div>
   );
 };

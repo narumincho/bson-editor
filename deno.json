@@ -5,19 +5,14 @@
     "jsx": "react",
     "jsxFactory": "React.createElement",
     "jsxFragmentFactory": "React.Fragment",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "deno.ns",
-      "deno.unstable"
-    ]
+    "lib": ["dom", "dom.iterable", "deno.ns", "deno.unstable"]
   },
   "tasks": {
     "build-client": {
-      "command": "deno run --check -A ./server/build.ts",
+      "command": "deno run --check -A ./web/build.tsx",
       "description": "Build code to run in a web browser"
     },
-    "run-server": "deno run --check --watch -A ./server/main.ts"
+    "run-server": "deno run --check --watch -A ./web/local.ts"
   },
   "imports": {
     "@deno/esbuild-plugin": "jsr:@deno/esbuild-plugin@^1.0.1",
