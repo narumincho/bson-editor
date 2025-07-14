@@ -46,17 +46,6 @@ export function activate(context: ExtensionContext) {
   //   }
   // });
 
-  // setInterval(async () => {
-  //   console.log("送信 in vscode", webviewList);
-  //   for (const { uri, webview } of webviewList) {
-  //     const message: MessageFromVsCode = {
-  //       type: "initialFile",
-  //       binary: await vscode.workspace.fs.readFile(uri),
-  //     };
-  //     webview.postMessage(message);
-  //   }
-  // }, 5000);
-
   /**
    * https://code.visualstudio.com/api/extension-guides/custom-editors
    */
@@ -96,6 +85,7 @@ export function activate(context: ExtensionContext) {
         dispose: () => {},
       };
     },
+    // deno-lint-ignore require-await
     resolveCustomEditor: async (
       document: BsonEditorDocument,
       webviewPanel: WebviewPanel,

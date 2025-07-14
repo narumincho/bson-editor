@@ -51,7 +51,7 @@ writeTextFileWithLog(
 
 writeTextFileWithLog(
   new URL(scriptFileName, distributionPath),
-  await build(new URL("../client/main.tsx", import.meta.url), "esm"),
+  await build(new URL("../client/mainVscode.tsx", import.meta.url), "esm"),
 );
 
 writeTextFileWithLog(

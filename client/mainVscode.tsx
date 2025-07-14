@@ -2,12 +2,7 @@ import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./component/Editor.tsx";
 import { DocumentWithError, fromBsonBinary } from "../bson/fromBsonBinary.ts";
-import { Header } from "./component/Header.tsx";
-import {
-  handleMessageFromVsCode,
-  isInVsCode,
-  sendMessageToVsCode,
-} from "./vscode.ts";
+import { handleMessageFromVsCode, sendMessageToVsCode } from "./vscode.ts";
 
 document.getElementById("loading")?.remove();
 const rootElement = document.createElement("div");
@@ -17,17 +12,13 @@ const root = createRoot(rootElement);
 
 const App = (): React.ReactElement => {
   const [bsonFile, setBsonFile] = React.useState<
-    DocumentWithError
-  >({ value: [], lastUnsupportedType: undefined });
+    DocumentWithError | undefined
+  >(undefined);
 
   useEffect(() => {
-    sendMessageToVsCode({
-      type: "requestFile",
-    });
-    sendMessageToVsCode({
-      type: "debugShowMessage",
-      message: `デバッグメッセージテスト`,
-    });
+    if (bsonFile === undefined) {
+      sendMessageToVsCode({ type: "requestFile" });
+    }
 
     return handleMessageFromVsCode((message) => {
       switch (message.type) {
@@ -37,15 +28,16 @@ const App = (): React.ReactElement => {
             type: "debugShowMessage",
             message: `バイナリを受け取ったよ ${message.binary.length}`,
           });
-
-          break;
       }
     });
-  }, []);
+  }, [bsonFile]);
+
+  if (bsonFile === undefined) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
-      {isInVsCode() === undefined ? <Header /> : undefined}
       <Editor
         value={bsonFile}
         onChange={setBsonFile}
