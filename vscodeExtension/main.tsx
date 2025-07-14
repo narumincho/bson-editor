@@ -9,9 +9,13 @@ import {
   ExtensionContext,
   importVsCodeApi,
   Uri,
+  Webview,
   WebviewPanel,
 } from "@narumincho/vscode";
-import { viewType } from "./lib.ts";
+import { scriptFileName, viewType } from "./lib.ts";
+import { renderToString } from "react-dom/server";
+import React from "react";
+import { MessageFromVsCode, MessageToVsCode } from "../client/vscode.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
@@ -24,6 +28,35 @@ export function activate(context: ExtensionContext) {
   const eventEmitter = new vscode.EventEmitter<
     CustomDocumentContentChangeEvent<BsonEditorDocument>
   >();
+
+  const webviewList: Array<{ readonly uri: Uri; readonly webview: Webview }> =
+    [];
+
+  // const watcher = vscode.workspace.createFileSystemWatcher("**/*.bson");
+  // watcher.onDidChange(async (e) => {
+  //   console.log("onDidChangeTextDocument", e.toString());
+  //   for (const { uri, webview } of webviewList) {
+  //     if (uri.toString() === e.toString()) {
+  //       const message: MessageFromVsCode = {
+  //         type: "initialFile",
+  //         binary: await vscode.workspace.fs.readFile(e),
+  //       };
+  //       webview.postMessage(message);
+  //     }
+  //   }
+  // });
+
+  // setInterval(async () => {
+  //   console.log("送信 in vscode", webviewList);
+  //   for (const { uri, webview } of webviewList) {
+  //     const message: MessageFromVsCode = {
+  //       type: "initialFile",
+  //       binary: await vscode.workspace.fs.readFile(uri),
+  //     };
+  //     webview.postMessage(message);
+  //   }
+  // }, 5000);
+
   /**
    * https://code.visualstudio.com/api/extension-guides/custom-editors
    */
@@ -45,37 +78,63 @@ export function activate(context: ExtensionContext) {
       _openContext: CustomDocumentOpenContext,
       _token: CancellationToken,
     ): Promise<BsonEditorDocument> => {
+      console.log("openCustomDocument");
       const file = await vscode.workspace.fs.readFile(uri);
+
+      webviewList.filter((e) => e.uri.toString() === uri.toString()).forEach(
+        ({ webview }) => {
+          webview.postMessage({
+            type: "initialFile",
+            binary: file,
+          });
+        },
+      );
+
       return {
         uri,
         originalBinary: file,
         dispose: () => {},
       };
     },
-    // deno-lint-ignore require-await
     resolveCustomEditor: async (
-      _document: BsonEditorDocument,
+      document: BsonEditorDocument,
       webviewPanel: WebviewPanel,
       _token: CancellationToken,
     ): Promise<void> => {
+      console.log("resolveCustomEditor");
       webviewPanel.webview.options = {
         enableScripts: true,
       };
       const scriptUri = webviewPanel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, "client.js"),
+        vscode.Uri.joinPath(context.extensionUri, scriptFileName),
       );
-      webviewPanel.webview.html = `<!doctype html>
-<html lang="ja">
-
-<head>
-  <meta charset="UTF-8">
-  <title>Bson Editor</title>
-  <script type="module" src="${scriptUri}"></script>
-</head>
-<body>
-  <div id="loading">Bson Editor loading</div>
-</body>
-</html>`;
+      webviewPanel.webview.html = "<!doctype html>\n" + renderToString(
+        <html lang="ja">
+          <head>
+            <meta charSet="UTF-8" />
+            <title>Bson Editor</title>
+            <script type="module" src={scriptUri.toString()} />
+          </head>
+          <body>
+            <div id="loading">Bson Editor loading</div>
+          </body>
+        </html>,
+      );
+      webviewPanel.webview.onDidReceiveMessage(
+        async (message: MessageToVsCode) => {
+          switch (message.type) {
+            case "requestFile":
+              await webviewPanel.webview.postMessage({
+                type: "initialFile",
+                binary: document.originalBinary,
+              });
+              return;
+            case "debugShowMessage":
+              console.log("Web viewからのメッセージ", message);
+          }
+        },
+      );
+      webviewList.push({ uri: document.uri, webview: webviewPanel.webview });
     },
     saveCustomDocument: async (
       document: BsonEditorDocument,

@@ -1,18 +1,13 @@
-import type { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Editor } from "./component/Editor.tsx";
-import { DocumentWithError } from "../bson/fromBsonBinary.ts";
+import { DocumentWithError, fromBsonBinary } from "../bson/fromBsonBinary.ts";
 import { Header } from "./component/Header.tsx";
-
-const getAcquireVsCodeApi = (): WebviewApi<unknown> | undefined => {
-  if (typeof globalThis.acquireVsCodeApi === "function") {
-    return globalThis.acquireVsCodeApi();
-  }
-  return undefined;
-};
-
-const vscodeWebviewApi = getAcquireVsCodeApi();
+import {
+  handleMessageFromVsCode,
+  isInVsCode,
+  sendMessageToVsCode,
+} from "./vscode.ts";
 
 document.getElementById("loading")?.remove();
 const rootElement = document.createElement("div");
@@ -25,9 +20,32 @@ const App = (): React.ReactElement => {
     DocumentWithError
   >({ value: [], lastUnsupportedType: undefined });
 
+  useEffect(() => {
+    sendMessageToVsCode({
+      type: "requestFile",
+    });
+    sendMessageToVsCode({
+      type: "debugShowMessage",
+      message: `デバッグメッセージテスト`,
+    });
+
+    return handleMessageFromVsCode((message) => {
+      switch (message.type) {
+        case "initialFile":
+          setBsonFile(fromBsonBinary(message.binary));
+          sendMessageToVsCode({
+            type: "debugShowMessage",
+            message: `バイナリを受け取ったよ ${message.binary.length}`,
+          });
+
+          break;
+      }
+    });
+  }, []);
+
   return (
     <div>
-      {vscodeWebviewApi === undefined ? <Header /> : undefined}
+      {isInVsCode() === undefined ? <Header /> : undefined}
       <Editor
         value={bsonFile}
         onChange={setBsonFile}

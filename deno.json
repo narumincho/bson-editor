@@ -11,6 +11,10 @@
     "build-web": {
       "command": "deno run --check -A ./web/build.tsx",
       "description": "Build code to run in a web browser"
+    },
+    "build-vscode-extension": {
+      "command": "deno run --check -A ./vscodeExtension/build.ts",
+      "description": "Build code to run in a vscode extension"
     }
   },
   "imports": {

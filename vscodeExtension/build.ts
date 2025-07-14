@@ -2,7 +2,7 @@ import { fromFileUrl } from "@std/path";
 import { denoPlugin } from "@deno/esbuild-plugin";
 import { build as esBuild } from "esbuild";
 import { ensureFile } from "@std/fs";
-import { viewType } from "./lib.ts";
+import { scriptFileName, viewType } from "./lib.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -46,11 +46,11 @@ const scriptRelativePath = "./main.js";
 
 writeTextFileWithLog(
   new URL(scriptRelativePath, distributionPath),
-  await build(new URL("./main.ts", import.meta.url), "cjs"),
+  await build(new URL("./main.tsx", import.meta.url), "cjs"),
 );
 
 writeTextFileWithLog(
-  new URL("client.js", distributionPath),
+  new URL(scriptFileName, distributionPath),
   await build(new URL("../client/main.tsx", import.meta.url), "esm"),
 );
 
