@@ -1,16 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
 } from "../../bson/fromBsonBinary.ts";
 import { Controller } from "./Controller.tsx";
-
-type Selection = { readonly type: "self" } | {
-  readonly type: "child";
-  readonly childIndex: number;
-  readonly selection: Selection;
-};
+import { type Selection } from "../selection.ts";
 
 const replace = (
   selection: Selection,
@@ -58,12 +53,12 @@ const replace = (
   }
 };
 
-export const Editor = ({ value, onChange }: {
+export const Editor = ({ value, selection, onChange, onChangeSelection }: {
   readonly value: DocumentWithError;
+  readonly selection: Selection;
   readonly onChange: (value: DocumentWithError) => void;
+  readonly onChangeSelection: (selection: Selection) => void;
 }): React.ReactElement => {
-  const [selection, setSelection] = useState<Selection>({ type: "self" });
-
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       switch (event.code) {
@@ -85,7 +80,7 @@ export const Editor = ({ value, onChange }: {
         value={value}
         selection={selection}
         onChange={onChange}
-        onSelectionChange={setSelection}
+        onSelectionChange={onChangeSelection}
       />
       <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
         <Controller

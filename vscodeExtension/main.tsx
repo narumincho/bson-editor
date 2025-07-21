@@ -15,7 +15,8 @@ import {
 import { scriptFileName, viewType } from "./lib.ts";
 import { renderToString } from "react-dom/server";
 import React from "react";
-import { MessageFromVsCode, MessageToVsCode } from "../client/vscode.ts";
+import { MessageToVsCode } from "../client/vscode.ts";
+import { registerCommands } from "./command.ts";
 
 export function activate(context: ExtensionContext) {
   const vscode = importVsCodeApi();
@@ -31,6 +32,17 @@ export function activate(context: ExtensionContext) {
 
   const webviewList: Array<{ readonly uri: Uri; readonly webview: Webview }> =
     [];
+
+  registerCommands(vscode, (message) => {
+    vscode.window.showInformationMessage(
+      vscode.window.activeTextEditor?.document.uri.toString() ??
+        "no active editor",
+    );
+    // TODO 対象のエディタのみメッセージを操作するように
+    for (const webView of webviewList) {
+      webView.webview.postMessage(message);
+    }
+  });
 
   // const watcher = vscode.workspace.createFileSystemWatcher("**/*.bson");
   // watcher.onDidChange(async (e) => {

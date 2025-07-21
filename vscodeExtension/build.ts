@@ -3,6 +3,8 @@ import { denoPlugin } from "@deno/esbuild-plugin";
 import { build as esBuild } from "esbuild";
 import { ensureFile } from "@std/fs";
 import { scriptFileName, viewType } from "./lib.ts";
+import { commands, languages } from "../client/command.ts";
+import { commandTitles } from "./command.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -54,6 +56,10 @@ writeTextFileWithLog(
   await build(new URL("../client/mainVscode.tsx", import.meta.url), "esm"),
 );
 
+const commandTitlePlaceHolder = (command: string) => `command.${command}.title`;
+
+const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
+
 writeTextFileWithLog(
   new URL("./package.json", distributionPath),
   JSON.stringify({
@@ -76,6 +82,10 @@ writeTextFileWithLog(
      * https://code.visualstudio.com/api/references/contribution-points
      */
     contributes: {
+      commands: commands.map((command) => ({
+        command: `bsonEditor.${command}`,
+        title: placeHolderUse(commandTitlePlaceHolder(command)),
+      })),
       customEditors: [
         {
           viewType,
@@ -93,6 +103,27 @@ writeTextFileWithLog(
     publisher: "narumincho",
   }),
 );
+
+const defaultLanguage = "en";
+
+for (const language of languages) {
+  const content = JSON.stringify(Object.fromEntries(
+    Object.entries(commandTitles).map(([command, title]) => [
+      commandTitlePlaceHolder(command),
+      title[language],
+    ]),
+  ));
+  if (language === defaultLanguage) {
+    writeTextFileWithLog(
+      new URL(`./package.nls.json`, distributionPath),
+      content,
+    );
+  }
+  writeTextFileWithLog(
+    new URL(`./package.nls.${language}.json`, distributionPath),
+    content,
+  );
+}
 
 writeTextFileWithLog(
   new URL("README.md", distributionPath),

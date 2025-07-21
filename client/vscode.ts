@@ -3,6 +3,8 @@ import { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
 export type MessageFromVsCode = {
   readonly type: "initialFile";
   readonly binary: Uint8Array;
+} | {
+  readonly type: "moveToParent";
 };
 
 export const handleMessageFromVsCode = (
