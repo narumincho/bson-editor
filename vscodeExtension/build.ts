@@ -4,7 +4,7 @@ import { build as esBuild } from "esbuild";
 import { ensureFile } from "@std/fs";
 import { scriptFileName, viewType } from "./lib.ts";
 import { commands, languages } from "../client/command.ts";
-import { commandTitles } from "./command.ts";
+import { commandKeybindings, commandTitles } from "./command.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -56,6 +56,8 @@ writeTextFileWithLog(
   await build(new URL("../client/mainVscode.tsx", import.meta.url), "esm"),
 );
 
+const commandToCommandId = (command: string) => `bsonEditor.${command}`;
+
 const commandTitlePlaceHolder = (command: string) => `command.${command}.title`;
 
 const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
@@ -63,7 +65,7 @@ const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
 writeTextFileWithLog(
   new URL("./package.json", distributionPath),
   JSON.stringify({
-    name: "bson editor",
+    name: "bson-editor",
     version: "0.0.1",
     description: "bson editor VSCode extension",
     repository: {
@@ -83,7 +85,7 @@ writeTextFileWithLog(
      */
     contributes: {
       commands: commands.map((command) => ({
-        command: `bsonEditor.${command}`,
+        command: commandToCommandId(command),
         title: placeHolderUse(commandTitlePlaceHolder(command)),
       })),
       customEditors: [
@@ -98,6 +100,9 @@ writeTextFileWithLog(
           priority: "default",
         },
       ],
+      keybindings: Object.entries(commandKeybindings).map((
+        [command, keybinding],
+      ) => ({ ...keybinding, command: commandToCommandId(command) })),
     },
     browser: scriptRelativePath,
     publisher: "narumincho",

@@ -1,6 +1,7 @@
 import { VSCodeAPI } from "@narumincho/vscode";
 import { Command, languages } from "../client/command.ts";
 import { MessageFromVsCode } from "../client/vscode.ts";
+import { viewType } from "./lib.ts";
 
 export const commandTitles: {
   readonly [key in Command]: {
@@ -10,6 +11,20 @@ export const commandTitles: {
   moveToParent: {
     en: "Move to parent",
     ja: "親へ移動",
+  },
+};
+
+export const commandKeybindings: {
+  readonly [key in Command]: {
+    readonly key: string;
+    readonly mac: string;
+    readonly when: string;
+  };
+} = {
+  moveToParent: {
+    key: "Q",
+    mac: "Q",
+    when: `editorFocus && activeCustomEditorId == ${viewType}`,
   },
 };
 
