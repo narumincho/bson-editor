@@ -2,7 +2,9 @@ import { fromFileUrl } from "@std/path";
 import { denoPlugin } from "@deno/esbuild-plugin";
 import { build as esBuild } from "esbuild";
 import { ensureFile } from "@std/fs";
-import { viewType } from "./lib.ts";
+import { scriptFileName, viewType } from "./lib.ts";
+import { commands, languages } from "../client/command.ts";
+import { commandKeybindings, commandTitles } from "./command.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -46,18 +48,24 @@ const scriptRelativePath = "./main.js";
 
 writeTextFileWithLog(
   new URL(scriptRelativePath, distributionPath),
-  await build(new URL("./main.ts", import.meta.url), "cjs"),
+  await build(new URL("./main.tsx", import.meta.url), "cjs"),
 );
 
 writeTextFileWithLog(
-  new URL("client.js", distributionPath),
-  await build(new URL("../client/main.tsx", import.meta.url), "esm"),
+  new URL(scriptFileName, distributionPath),
+  await build(new URL("../client/mainVscode.tsx", import.meta.url), "esm"),
 );
+
+const commandToCommandId = (command: string) => `bsonEditor.${command}`;
+
+const commandTitlePlaceHolder = (command: string) => `command.${command}.title`;
+
+const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
 
 writeTextFileWithLog(
   new URL("./package.json", distributionPath),
   JSON.stringify({
-    name: "bson editor",
+    name: "bson-editor",
     version: "0.0.1",
     description: "bson editor VSCode extension",
     repository: {
@@ -76,6 +84,10 @@ writeTextFileWithLog(
      * https://code.visualstudio.com/api/references/contribution-points
      */
     contributes: {
+      commands: commands.map((command) => ({
+        command: commandToCommandId(command),
+        title: placeHolderUse(commandTitlePlaceHolder(command)),
+      })),
       customEditors: [
         {
           viewType,
@@ -88,11 +100,35 @@ writeTextFileWithLog(
           priority: "default",
         },
       ],
+      keybindings: Object.entries(commandKeybindings).map((
+        [command, keybinding],
+      ) => ({ ...keybinding, command: commandToCommandId(command) })),
     },
     browser: scriptRelativePath,
     publisher: "narumincho",
   }),
 );
+
+const defaultLanguage = "en";
+
+for (const language of languages) {
+  const content = JSON.stringify(Object.fromEntries(
+    Object.entries(commandTitles).map(([command, title]) => [
+      commandTitlePlaceHolder(command),
+      title[language],
+    ]),
+  ));
+  if (language === defaultLanguage) {
+    writeTextFileWithLog(
+      new URL(`./package.nls.json`, distributionPath),
+      content,
+    );
+  }
+  writeTextFileWithLog(
+    new URL(`./package.nls.${language}.json`, distributionPath),
+    content,
+  );
+}
 
 writeTextFileWithLog(
   new URL("README.md", distributionPath),

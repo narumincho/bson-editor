@@ -1,16 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
 } from "../../bson/fromBsonBinary.ts";
 import { Controller } from "./Controller.tsx";
-
-type Selection = { readonly type: "self" } | {
-  readonly type: "child";
-  readonly childIndex: number;
-  readonly selection: Selection;
-};
+import { type Selection } from "../selection.ts";
 
 const replace = (
   selection: Selection,
@@ -39,18 +34,17 @@ const replace = (
               originalIfInvalidUtf8Error:
                 nameElementPair.name.originalIfInvalidUtf8Error,
             },
-            value:
-              selection.selection.type === "child" &&
+            value: selection.selection.type === "child" &&
                 nameElementPair.value.type === "document"
-                ? {
-                  type: "document",
-                  value: replace(
-                    selection.selection,
-                    element,
-                    nameElementPair.value.value,
-                  ),
-                }
-                : element,
+              ? {
+                type: "document",
+                value: replace(
+                  selection.selection,
+                  element,
+                  nameElementPair.value.value,
+                ),
+              }
+              : element,
           },
         ),
         lastUnsupportedType: document.lastUnsupportedType,
@@ -59,11 +53,26 @@ const replace = (
   }
 };
 
-export const Editor = ({ value, onChange }: {
+export const Editor = ({ value, selection, onChange, onChangeSelection }: {
   readonly value: DocumentWithError;
+  readonly selection: Selection;
   readonly onChange: (value: DocumentWithError) => void;
+  readonly onChangeSelection: (selection: Selection) => void;
 }): React.ReactElement => {
-  const [selection, setSelection] = useState<Selection>({ type: "self" });
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      switch (event.code) {
+        case "Enter":
+          selection;
+      }
+    };
+
+    addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
 
   return (
     <div>
@@ -71,7 +80,7 @@ export const Editor = ({ value, onChange }: {
         value={value}
         selection={selection}
         onChange={onChange}
-        onSelectionChange={setSelection}
+        onSelectionChange={onChangeSelection}
       />
       <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
         <Controller

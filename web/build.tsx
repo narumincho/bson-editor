@@ -5,7 +5,7 @@ import { join } from "@std/path";
 import { encodeHex } from "@std/encoding";
 
 const bundleOutput = await new Deno.Command(Deno.execPath(), {
-  args: ["bundle", "--platform", "browser", "./client/main.tsx"],
+  args: ["bundle", "--platform", "browser", "./client/mainWeb.tsx"],
 }).output();
 
 if (!bundleOutput.success) {

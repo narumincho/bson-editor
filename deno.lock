@@ -26,7 +26,8 @@
       "integrity": "84b455e28b8750b943d30f09a585c8783d92ad7ecfd872267ade6f8695cd5c36",
       "dependencies": [
         "jsr:@deno/loader",
-        "jsr:@std/path@^1.1.0"
+        "jsr:@std/path@^1.1.0",
+        "npm:esbuild"
       ]
     },
     "@deno/loader@0.1.2": {
