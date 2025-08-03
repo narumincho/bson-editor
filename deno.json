@@ -15,7 +15,8 @@
     "build-vscode-extension": {
       "command": "deno run --check -A ./vscodeExtension/build.ts",
       "description": "Build code to run in a vscode extension"
-    }
+    },
+    "generate-example-bson-files": "deno run --check --allow-write=./example ./example/generate.ts"
   },
   "imports": {
     "@deno/esbuild-plugin": "jsr:@deno/esbuild-plugin@^1.0.1",

@@ -7,6 +7,27 @@ import {
 import { assertEquals } from "@std/assert";
 import { serialize } from "bson";
 
+Deno.test("from file", async () => {
+  const file = await Deno.readFile("./example/sampleText.bson");
+  assertEquals(fromBsonBinary(file), {
+    lastUnsupportedType: undefined,
+    value: [{
+      name: {
+        notFoundEndOfFlag: false,
+        originalIfInvalidUtf8Error: undefined,
+        value: "sampleName",
+      },
+      value: {
+        type: "string",
+        value: {
+          originalIfError: undefined,
+          value: "サンプルテキスト",
+        },
+      },
+    }],
+  });
+});
+
 Deno.test("bsonBinaryToStructuredBson", () => {
   assertEquals(
     fromBsonBinary(serialize({ a: "サンプルテキスト", b: "あああ" })),
