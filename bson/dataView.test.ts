@@ -108,7 +108,7 @@ Deno.test("createLocationAndNextDataView", () => {
     createLocationAndNextDataView(dataView, 2),
     {
       left: toReadonlyDataView(new DataView(buffer, 1, 2)),
-      right: toReadonlyDataView(new DataView(buffer, 3, 2)),
+      right: toReadonlyDataView(new DataView(buffer, 3, 1)),
       overflow: false,
     },
   );

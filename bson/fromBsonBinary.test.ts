@@ -1,15 +1,11 @@
 import { toReadonlyDataView } from "./dataView.ts";
-import {
-  elementFromDataView,
-  fromBsonBinary,
-  parseCString,
-} from "./fromBsonBinary.ts";
+import { fromBsonBinary, parseCString } from "./fromBsonBinary.ts";
 import { assertEquals } from "@std/assert";
 import { serialize } from "bson";
 
 Deno.test("bsonBinaryToStructuredBson", () => {
   assertEquals(
-    fromBsonBinary(serialize({ a: "サンプルテキスト" })),
+    fromBsonBinary(serialize({ a: "サンプルテキスト", b: "あああ" })),
     {
       value: [
         {
@@ -22,6 +18,20 @@ Deno.test("bsonBinaryToStructuredBson", () => {
             type: "string",
             value: {
               value: "サンプルテキスト",
+              originalIfError: undefined,
+            },
+          },
+        },
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "b",
+          },
+          value: {
+            type: "string",
+            value: {
+              value: "あああ",
               originalIfError: undefined,
             },
           },
@@ -47,57 +57,46 @@ Deno.test("parseCString", () => {
   );
 });
 
-Deno.test("element", () => {
+Deno.test("double", () => {
   assertEquals(
-    elementFromDataView(
-      toReadonlyDataView(new DataView(new Uint8Array([0x00]).buffer)),
-    ),
-    { type: "endOfElement" },
-  );
-
-  const doubleValue = new DataView(new Uint8Array(8).buffer);
-  doubleValue.setFloat64(0, 12345);
-  const bson = new Uint8Array([
-    0x01,
-    ...new TextEncoder().encode("a"),
-    0x00,
-    ...new Uint8Array(doubleValue.buffer),
-  ]);
-  assertEquals(
-    bson,
-    new Uint8Array([
-      0x01,
-      0x61,
-      0x00,
-      64,
-      200,
-      28,
-      128,
-      0x00,
-      0x00,
-      0x00,
-      0x00,
-    ]),
-  );
-
-  assertEquals(
-    elementFromDataView(toReadonlyDataView(new DataView(bson.buffer))),
+    fromBsonBinary(serialize({ "数値サンプル": 1.2 })),
     {
-      type: "element",
-      element: {
-        next: toReadonlyDataView(new DataView(bson.buffer, 11, 0)),
-        value: {
+      value: [
+        {
           name: {
-            notFoundEndOfFlag: true,
+            notFoundEndOfFlag: false,
             originalIfInvalidUtf8Error: undefined,
-            value: "",
+            value: "数値サンプル",
           },
           value: {
             type: "double",
-            value: 12345,
+            value: 1.2,
           },
         },
-      },
+      ],
+      lastUnsupportedType: undefined,
+    },
+  );
+});
+
+Deno.test("int32", () => {
+  assertEquals(
+    fromBsonBinary(serialize({ "整数サンプル": 15 })),
+    {
+      value: [
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "整数サンプル",
+          },
+          value: {
+            type: "int32",
+            value: 15,
+          },
+        },
+      ],
+      lastUnsupportedType: undefined,
     },
   );
 });

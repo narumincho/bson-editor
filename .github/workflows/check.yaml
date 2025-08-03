@@ -1,0 +1,17 @@
+on: pull_request
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v4
+      - name: setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - run: deno check
+      - run: deno lint
+      - run: deno test
+      - run: deno task build-web
+      - run: deno task build-vscode-extension

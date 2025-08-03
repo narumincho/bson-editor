@@ -19,7 +19,7 @@ export type ElementValueWithError =
   | { readonly type: "double"; readonly value: number | undefined }
   | { readonly type: "string"; readonly value: StringWithInvalid }
   | { readonly type: "document"; readonly value: DocumentWithError }
-  | { readonly type: "int32"; readonly value: number };
+  | { readonly type: "int32"; readonly value: number | undefined };
 
 export type CStringWithInvalid = {
   readonly value: string;
@@ -86,8 +86,9 @@ export const documentFromDataView = (
   }
 };
 
-const typeIdDouble = 0x01;
-const typeIdString = 0x02;
+const typeIdDouble = 1;
+const typeIdString = 2;
+const typeIdInt32 = 16;
 
 type DeserializeElementResult = {
   readonly type: "element";
@@ -137,6 +138,22 @@ export const elementFromDataView = (
             },
           },
           next: string.next,
+        },
+      };
+    }
+    case typeIdInt32: {
+      const double = getInt32(nameAndNext.next);
+      return {
+        type: "element",
+        element: {
+          value: {
+            name: nameAndNext.value,
+            value: {
+              type: "int32",
+              value: double.value,
+            },
+          },
+          next: double.next,
         },
       };
     }
