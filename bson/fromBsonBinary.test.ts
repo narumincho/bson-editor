@@ -9,7 +9,7 @@ import { serialize } from "bson";
 
 Deno.test("bsonBinaryToStructuredBson", () => {
   assertEquals(
-    fromBsonBinary(serialize({ a: "サンプルテキスト" })),
+    fromBsonBinary(serialize({ a: "サンプルテキスト", b: "あああ" })),
     {
       value: [
         {
@@ -22,6 +22,20 @@ Deno.test("bsonBinaryToStructuredBson", () => {
             type: "string",
             value: {
               value: "サンプルテキスト",
+              originalIfError: undefined,
+            },
+          },
+        },
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "b",
+          },
+          value: {
+            type: "string",
+            value: {
+              value: "あああ",
               originalIfError: undefined,
             },
           },
@@ -43,6 +57,50 @@ Deno.test("parseCString", () => {
         notFoundEndOfFlag: false,
         value: "a",
       },
+    },
+  );
+});
+
+Deno.test("double", () => {
+  assertEquals(
+    fromBsonBinary(serialize({ "数値サンプル": 1.2 })),
+    {
+      value: [
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "数値サンプル",
+          },
+          value: {
+            type: "double",
+            value: 1.2,
+          },
+        },
+      ],
+      lastUnsupportedType: undefined,
+    },
+  );
+});
+
+Deno.test("int32", () => {
+  assertEquals(
+    fromBsonBinary(serialize({ "整数サンプル": 15 })),
+    {
+      value: [
+        {
+          name: {
+            notFoundEndOfFlag: false,
+            originalIfInvalidUtf8Error: undefined,
+            value: "整数サンプル",
+          },
+          value: {
+            type: "int32",
+            value: 15,
+          },
+        },
+      ],
+      lastUnsupportedType: undefined,
     },
   );
 });
