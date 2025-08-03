@@ -4,15 +4,15 @@ import {
   fromBsonBinary,
 } from "../../bson/fromBsonBinary.ts";
 
-const getFileFromDataTransferItemList = (itemList: DataTransferItemList) => {
-  const items = [...itemList];
-  // getAsFile で File として解釈できるものを優先
-  // - バイナリとして解釈成功するものを優先
-  // - つぎにテキストとして解釈成功するものを優先
-  // 次に, getAsString で 解釈できるものを優先
+// const getFileFromDataTransferItemList = (itemList: DataTransferItemList) => {
+//   const items = [...itemList];
+//   // getAsFile で File として解釈できるものを優先
+//   // - バイナリとして解釈成功するものを優先
+//   // - つぎにテキストとして解釈成功するものを優先
+//   // 次に, getAsString で 解釈できるものを優先
 
-  items.find((e) => e.getAsFile());
-};
+//   items.find((e) => e.getAsFile());
+// };
 
 export const Controller = (
   { onReplace }: { onReplace: (document: ElementValueWithError) => void },
