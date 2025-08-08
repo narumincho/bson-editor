@@ -51,7 +51,9 @@ export const fromBsonBinary = (
   binary: Uint8Array,
 ): DocumentWithError => {
   return documentFromDataView(
-    toReadonlyDataView(new DataView(binary.buffer)),
+    toReadonlyDataView(
+      new DataView(binary.buffer, binary.byteOffset, binary.byteLength),
+    ),
   );
 };
 
