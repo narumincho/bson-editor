@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 
 import {
   DocumentWithError,
@@ -59,21 +59,6 @@ export const Editor = ({ value, selection, onChange, onChangeSelection }: {
   readonly onChange: (value: DocumentWithError) => void;
   readonly onChangeSelection: (selection: Selection) => void;
 }): React.ReactElement => {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.code) {
-        case "Enter":
-          selection;
-      }
-    };
-
-    addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <div>
       <DocumentView
