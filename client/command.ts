@@ -1,43 +1,26 @@
-import { DocumentWithError } from "../bson/fromBsonBinary.ts";
-import type { Selection } from "./selection.ts";
+import type { AppState } from "./appState.ts";
+import { moveToParent } from "./command/moveToParent.ts";
+import { startTextEdit } from "./command/startTextEdit.ts";
 
 export const languages = ["en", "ja"] as const;
 
 export const commands = [
   "moveToParent",
+  "startTextEdit",
 ] as const;
 
 export type Command = typeof commands[number];
 
 export const handleCommand = (
-  { command, selection }: {
+  { command, appState }: {
     readonly command: Command;
-    readonly selection: Selection;
-    readonly document: DocumentWithError;
+    readonly appState: AppState;
   },
-): Selection => {
+): AppState => {
   switch (command) {
     case "moveToParent":
-      return moveToParent(selection);
-  }
-};
-
-export const moveToParent = (
-  selection: Selection,
-): Selection => {
-  switch (selection.type) {
-    case "self":
-      return { type: "self" };
-    case "child":
-      switch (selection.selection.type) {
-        case "self":
-          return { type: "self" };
-        case "child":
-          return {
-            type: "child",
-            childIndex: selection.childIndex,
-            selection: moveToParent(selection.selection),
-          };
-      }
+      return moveToParent(appState);
+    case "startTextEdit":
+      return startTextEdit(appState);
   }
 };

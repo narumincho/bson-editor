@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
 } from "../../bson/fromBsonBinary.ts";
 import { Controller } from "./Controller.tsx";
-import { type Selection } from "../selection.ts";
+import type { AppState, Selection } from "../appState.ts";
 
 const replace = (
   selection: Selection,
@@ -53,24 +53,24 @@ const replace = (
   }
 };
 
-export const Editor = ({ value, selection, onChange, onChangeSelection }: {
-  readonly value: DocumentWithError;
-  readonly selection: Selection;
+export const Editor = ({ appState, onChange, onSelectionChange }: {
+  readonly appState: AppState;
   readonly onChange: (value: DocumentWithError) => void;
-  readonly onChangeSelection: (selection: Selection) => void;
+  readonly onSelectionChange: (selection: Selection) => void;
 }): React.ReactElement => {
   return (
     <div>
       <DocumentView
-        value={value}
-        selection={selection}
+        value={appState.document}
+        selection={appState.selection}
+        isTextEdit={appState.isTextEdit}
         onChange={onChange}
-        onSelectionChange={onChangeSelection}
+        onSelectionChange={onSelectionChange}
       />
       <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
         <Controller
           onReplace={(e) => {
-            onChange(replace(selection, e, value));
+            onChange(replace(appState.selection, e, appState.document));
           }}
         />
       </div>
@@ -78,12 +78,15 @@ export const Editor = ({ value, selection, onChange, onChangeSelection }: {
   );
 };
 
-const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
-  readonly value: DocumentWithError;
-  readonly selection: Selection | undefined;
-  readonly onChange: (value: DocumentWithError) => void;
-  readonly onSelectionChange: (selection: Selection) => void;
-}): React.ReactElement => {
+const DocumentView = (
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
+    readonly value: DocumentWithError;
+    readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
+    readonly onChange: (value: DocumentWithError) => void;
+    readonly onSelectionChange: (selection: Selection) => void;
+  },
+): React.ReactElement => {
   return (
     <div>
       document
@@ -108,6 +111,7 @@ const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
                   selection.childIndex === index
                 ? selection.selection
                 : undefined}
+              isTextEdit={isTextEdit}
               onChange={(element) => {
                 onChange({
                   lastUnsupportedType: value.lastUnsupportedType,
@@ -183,9 +187,10 @@ const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
 };
 
 const ElementViewContainer = (
-  { value, selection, onChange, onSelectionChange }: {
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
     readonly value: ElementValueWithError;
     readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
     readonly onChange: (value: ElementValueWithError) => void;
     readonly onSelectionChange: (selection: Selection) => void;
   },
@@ -206,6 +211,7 @@ const ElementViewContainer = (
       <ElementView
         value={value}
         selection={selection}
+        isTextEdit={isTextEdit}
         onChange={onChange}
         onSelectionChange={onSelectionChange}
       />
@@ -214,13 +220,17 @@ const ElementViewContainer = (
 };
 
 const ElementView = (
-  { value, selection, onChange, onSelectionChange }: {
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
     readonly value: ElementValueWithError;
     readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
     readonly onChange: (value: ElementValueWithError) => void;
     readonly onSelectionChange: (selection: Selection) => void;
   },
 ): React.ReactElement => {
+  if (selection?.type === "self" && isTextEdit) {
+    return <TextEdit />;
+  }
   switch (value.type) {
     case "double":
       return (
@@ -245,6 +255,7 @@ const ElementView = (
         <DocumentView
           value={value.value}
           selection={selection}
+          isTextEdit={isTextEdit}
           onChange={(value) => {
             onChange({
               type: "document",
@@ -257,4 +268,14 @@ const ElementView = (
     default:
       return <div>unsupported type</div>;
   }
+};
+
+const TextEdit = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  return <input ref={inputRef} />;
 };

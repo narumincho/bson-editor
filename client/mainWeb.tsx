@@ -1,5 +1,5 @@
-import React from "react";
 import { hydrateRoot } from "react-dom/client";
-import { App } from "./component/App.tsx";
+import React from "react";
+import { WebApp } from "./component/WebApp.tsx";
 
-hydrateRoot(document.body, <App />);
+hydrateRoot(document.body, <WebApp />);

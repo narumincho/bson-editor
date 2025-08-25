@@ -12,6 +12,10 @@ export const commandTitles: {
     en: "Move to parent",
     ja: "親へ移動",
   },
+  startTextEdit: {
+    en: "Start Text Edit",
+    ja: "文字列編集",
+  },
 };
 
 export const commandKeybindings: {
@@ -24,6 +28,11 @@ export const commandKeybindings: {
   moveToParent: {
     key: "Q",
     mac: "Q",
+    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+  },
+  startTextEdit: {
+    key: "Enter",
+    mac: "Enter",
     when: `editorFocus && activeCustomEditorId == ${viewType}`,
   },
 };

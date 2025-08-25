@@ -118,7 +118,7 @@ export function activate(context: ExtensionContext) {
             <script type="module" src={scriptUri.toString()} />
           </head>
           <body>
-            <div id="loading">Bson Editor loading</div>
+            <div id="loading">Bson Editor script loading...</div>
           </body>
         </html>,
       );

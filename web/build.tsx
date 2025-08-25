@@ -3,7 +3,7 @@ import { renderToString } from "react-dom/server";
 import { emptyDir } from "@std/fs";
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding";
-import { App } from "../client/component/App.tsx";
+import { WebApp } from "../client/component/WebApp.tsx";
 
 const bundleOutput = await new Deno.Command(Deno.execPath(), {
   args: ["bundle", "--platform", "browser", "./client/mainWeb.tsx"],
@@ -58,7 +58,7 @@ body {
           <noscript>
             JavaScript is required to run nBson Editor.
           </noscript>
-          <App />
+          <WebApp />
         </body>
       </html>,
     )
