@@ -9,15 +9,24 @@ const bundleOutput = await new Deno.Command(Deno.execPath(), {
   args: ["bundle", "--platform", "browser", "./client/mainWeb.tsx"],
 }).output();
 
-if (!bundleOutput.success) {
-  throw new Error(new TextDecoder().decode(bundleOutput.stderr));
+const { outputFiles: [outputFile] = [] } = await Deno.bundle({
+  platform: "browser",
+  entrypoints: ["./client/mainWeb.tsx"],
+});
+
+if (!outputFile) {
+  throw new Error("not found output file");
+}
+
+if (!outputFile.contents) {
+  throw new Error("not found output file contents");
 }
 
 const scriptFileName = `${
   encodeHex(
     await crypto.subtle.digest(
       "SHA-256",
-      bundleOutput.stdout,
+      new Uint8Array(outputFile.contents),
     ),
   )
 }.js`;

@@ -1,6 +1,4 @@
 import { fromFileUrl } from "@std/path";
-import { denoPlugin } from "@deno/esbuild-plugin";
-import { build as esBuild } from "esbuild";
 import { ensureFile } from "@std/fs";
 import { scriptFileName, viewType } from "./lib.ts";
 import { commands, languages } from "../client/command.ts";
@@ -22,20 +20,16 @@ const distributionPath = new URL(
 );
 
 const build = async (url: URL, format: "cjs" | "esm"): Promise<string> => {
-  const esbuildResult = await esBuild({
-    entryPoints: [fromFileUrl(url)],
-    plugins: [denoPlugin()],
-    write: false,
-    bundle: true,
+  const bundleResult = await Deno.bundle({
+    entrypoints: [fromFileUrl(url)],
     format,
-    target: ["node18", "chrome115"],
   });
 
-  for (const esbuildResultFile of esbuildResult.outputFiles ?? []) {
-    if (esbuildResultFile.path === "<stdout>") {
+  for (const file of bundleResult.outputFiles ?? []) {
+    if (file.path === "<stdout>") {
       console.log("js 発見");
       const scriptContent = new TextDecoder().decode(
-        esbuildResultFile.contents,
+        file.contents,
       );
 
       return scriptContent;

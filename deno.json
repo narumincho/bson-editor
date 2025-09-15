@@ -9,11 +9,11 @@
   },
   "tasks": {
     "build-web": {
-      "command": "deno run --check -A ./web/build.tsx",
+      "command": "deno run --unstable-bundle --check -A ./web/build.tsx",
       "description": "Build code to run in a web browser"
     },
     "build-vscode-extension": {
-      "command": "deno run --check -A ./vscodeExtension/build.ts",
+      "command": "deno run --unstable-bundle --check -A ./vscodeExtension/build.ts",
       "description": "Build code to run in a vscode extension"
     },
     "generate-example-bson-files": "deno run --check --allow-write=./example ./example/generate.ts"
