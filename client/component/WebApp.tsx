@@ -41,7 +41,11 @@ export const WebApp = (): React.ReactElement => {
   }, []);
 
   const handleChangeSelection = useCallback((selection: Selection): void => {
-    setAppState((prev) => ({ ...prev, selection }));
+    setAppState((prev) => ({
+      document: prev.document,
+      selection,
+      isTextEdit: false,
+    }));
   }, []);
 
   return (
