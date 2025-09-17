@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 import {
   DocumentWithError,
@@ -67,13 +67,17 @@ export const Editor = ({ appState, onChange, onSelectionChange }: {
         onChange={onChange}
         onSelectionChange={onSelectionChange}
       />
-      <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
-        <Controller
-          onReplace={(e) => {
-            onChange(replace(appState.selection, e, appState.document));
-          }}
-        />
-      </div>
+      {appState.isTextEdit
+        ? undefined
+        : (
+          <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
+            <Controller
+              onReplace={(e) => {
+                onChange(replace(appState.selection, e, appState.document));
+              }}
+            />
+          </div>
+        )}
     </div>
   );
 };
@@ -229,7 +233,7 @@ const ElementView = (
   },
 ): React.ReactElement => {
   if (selection?.type === "self" && isTextEdit) {
-    return <TextEdit />;
+    return <TextEdit initialValue={elementValueWithErrorToText(value)} />;
   }
   switch (value.type) {
     case "double":
@@ -270,12 +274,54 @@ const ElementView = (
   }
 };
 
-const TextEdit = () => {
-  const inputRef = useRef<HTMLInputElement>(null);
+const elementValueWithErrorToText = (
+  element: ElementValueWithError,
+): string => {
+  switch (element.type) {
+    case "string":
+      return element.value.value;
+    case "double":
+      return `${element.value}`;
+    case "document":
+      return `${
+        JSON.stringify(element.value.value.map((
+          { name, value },
+        ) => [name, elementValueWithErrorToText(value)]))
+      }`;
+    case "int32":
+      return `${element.value}`;
+  }
+};
 
-  useEffect(() => {
-    inputRef.current?.focus();
+const TextEdit = ({ initialValue }: { initialValue: string }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+      // console.log("Resized:", textarea.scrollHeight, "px");
+    }
   }, []);
 
-  return <input ref={inputRef} />;
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.focus();
+
+    const observer = new ResizeObserver(resize);
+
+    observer.observe(textarea);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      onInput={resize}
+      defaultValue={initialValue}
+    />
+  );
 };
