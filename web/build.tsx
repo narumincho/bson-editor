@@ -4,6 +4,7 @@ import { emptyDir } from "@std/fs";
 import { join } from "@std/path";
 import { encodeHex } from "@std/encoding";
 import { WebApp } from "../client/component/WebApp.tsx";
+import { distDirectory } from "./const.ts";
 
 const bundleOutput = await new Deno.Command(Deno.execPath(), {
   args: ["bundle", "--platform", "browser", "./client/mainWeb.tsx"],
@@ -30,8 +31,6 @@ const scriptFileName = `${
     ),
   )
 }.js`;
-
-const distDirectory = "./webDistribution";
 
 await emptyDir(distDirectory);
 
