@@ -1,4 +1,4 @@
-import { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
+import type { WebviewApi } from "vscode-webview";
 
 export type MessageFromVsCode = {
   readonly type: "initialFile";
