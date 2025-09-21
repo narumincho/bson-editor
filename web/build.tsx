@@ -6,10 +6,6 @@ import { encodeHex } from "@std/encoding";
 import { WebApp } from "../client/component/WebApp.tsx";
 import { distDirectory } from "./const.ts";
 
-const bundleOutput = await new Deno.Command(Deno.execPath(), {
-  args: ["bundle", "--platform", "browser", "./client/mainWeb.tsx"],
-}).output();
-
 const { outputFiles: [outputFile] = [] } = await Deno.bundle({
   platform: "browser",
   entrypoints: ["./client/mainWeb.tsx"],
@@ -34,7 +30,7 @@ const scriptFileName = `${
 
 await emptyDir(distDirectory);
 
-await Deno.writeFile(join(distDirectory, scriptFileName), bundleOutput.stdout);
+await Deno.writeFile(join(distDirectory, scriptFileName), outputFile.contents);
 
 await Deno.writeTextFile(
   join(distDirectory, "index.html"),
@@ -72,5 +68,3 @@ body {
     )
   }`,
 );
-
-Deno.exit();

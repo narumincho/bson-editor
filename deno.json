@@ -12,8 +12,8 @@
       "command": "deno run --unstable-bundle --check -A ./web/build.tsx",
       "description": "Build code to run in a web browser"
     },
-    "serve-web": {
-      "command": "deno run --check -A ./web/serve.ts",
+    "serve-web-dev": {
+      "command": "deno run --unstable-bundle --watch=./client --check -A ./web/serve.ts",
       "description": "Serve webDistribution"
     },
     "build-vscode-extension": {
