@@ -34,14 +34,21 @@ export function activate(context: ExtensionContext) {
     [];
 
   registerCommands(vscode, (message) => {
-    vscode.window.showInformationMessage(
-      vscode.window.activeTextEditor?.document.uri.toString() ??
-        "no active editor",
-    );
-    // TODO 対象のエディタのみメッセージを操作するように
-    for (const webView of webviewList) {
-      webView.webview.postMessage(message);
+    const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+    if (!(activeTab?.input instanceof vscode.TabInputCustom)) {
+      return;
     }
+    if (activeTab.input.viewType !== viewType) {
+      return;
+    }
+    vscode.window.showInformationMessage(`search: ${activeTab.input.uri}`);
+    for (const webView of webviewList) {
+      if (webView.uri.toString() === activeTab.input.uri.toString()) {
+        webView.webview.postMessage(message);
+        return;
+      }
+    }
+    vscode.window.showInformationMessage(`not found: ${activeTab.input.uri}`);
   });
 
   // const watcher = vscode.workspace.createFileSystemWatcher("**/*.bson");
@@ -165,6 +172,10 @@ export function activate(context: ExtensionContext) {
   const provider = vscode.window.registerCustomEditorProvider(
     viewType,
     customEditorProvider,
+    {
+      // supportsMultipleEditorsPerDocument: true,
+      webviewOptions: { enableFindWidget: true },
+    },
   );
   context.subscriptions.push(provider);
 }
