@@ -36,10 +36,6 @@ const App = (): React.ReactElement => {
     });
   }, [appState]);
 
-  if (appState === undefined) {
-    return <div>Loading...</div>;
-  }
-
   const handleChange = useCallback((document: DocumentWithError): void => {
     setAppState((prev) => (prev ? { ...prev, document } : undefined));
   }, []);
@@ -47,6 +43,10 @@ const App = (): React.ReactElement => {
   const handleChangeSelection = useCallback((selection: Selection): void => {
     setAppState((prev) => (prev ? { ...prev, selection } : undefined));
   }, []);
+
+  if (appState === undefined) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Editor
