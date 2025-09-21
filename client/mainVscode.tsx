@@ -27,16 +27,11 @@ const App = (): React.ReactElement => {
             message: `バイナリを受け取ったよ ${message.binary.length}`,
           });
           return;
-        case "moveToParent":
+        case "command":
           if (appState) {
-            setAppState(
-              handleCommand({
-                command: "moveToParent",
-                appState,
-              }),
-            );
-            return;
+            setAppState(handleCommand({ command: message.command, appState }));
           }
+          return;
       }
     });
   }, [appState]);

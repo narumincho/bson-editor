@@ -1,7 +1,7 @@
 import { VSCodeAPI } from "@narumincho/vscode";
-import { Command, languages } from "../client/command.ts";
+import { Command, commands, languages } from "../client/command.ts";
 import { MessageFromVsCode } from "../client/vscode.ts";
-import { viewType } from "./lib.ts";
+import { commandToCommandId, viewType } from "./lib.ts";
 
 export const commandTitles: {
   readonly [key in Command]: {
@@ -15,6 +15,14 @@ export const commandTitles: {
   startTextEdit: {
     en: "Start Text Edit",
     ja: "文字列編集",
+  },
+  cancelTextEdit: {
+    en: "Cancel Text Edit",
+    ja: "文字列編集をキャンセルする",
+  },
+  confirmTextEdit: {
+    en: "Confirm Text Edit",
+    ja: "文字列編集を確定する",
   },
 };
 
@@ -35,13 +43,25 @@ export const commandKeybindings: {
     mac: "Enter",
     when: `editorFocus && activeCustomEditorId == ${viewType}`,
   },
+  cancelTextEdit: {
+    key: "Escape",
+    mac: "Escape",
+    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+  },
+  confirmTextEdit: {
+    key: "Ctrl+Enter",
+    mac: "Cmd+Enter",
+    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+  },
 };
 
 export const registerCommands = (
   vscode: VSCodeAPI,
   messageToWebview: (message: MessageFromVsCode) => void,
 ): void => {
-  vscode.commands.registerCommand("bsonEditor.moveToParent", () => {
-    messageToWebview({ type: "moveToParent" });
-  });
+  for (const command of commands) {
+    vscode.commands.registerCommand(commandToCommandId(command), () => {
+      messageToWebview({ type: "command", command });
+    });
+  }
 };

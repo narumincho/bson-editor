@@ -1,10 +1,12 @@
 import type { WebviewApi } from "vscode-webview";
+import { Command } from "./command.ts";
 
 export type MessageFromVsCode = {
   readonly type: "initialFile";
   readonly binary: Uint8Array;
 } | {
-  readonly type: "moveToParent";
+  readonly type: "command";
+  readonly command: Command;
 };
 
 export const handleMessageFromVsCode = (

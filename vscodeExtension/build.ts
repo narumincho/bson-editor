@@ -1,7 +1,7 @@
 import { fromFileUrl } from "@std/path";
 import { ensureFile } from "@std/fs";
-import { scriptFileName, viewType } from "./lib.ts";
-import { commands, languages } from "../client/command.ts";
+import { commandToCommandId, scriptFileName, viewType } from "./lib.ts";
+import { Command, commands, languages } from "../client/command.ts";
 import { commandKeybindings, commandTitles } from "./command.ts";
 
 export const writeTextFileWithLog = async (
@@ -50,8 +50,6 @@ writeTextFileWithLog(
   await build(new URL("../client/mainVscode.tsx", import.meta.url), "esm"),
 );
 
-const commandToCommandId = (command: string) => `bsonEditor.${command}`;
-
 const commandTitlePlaceHolder = (command: string) => `command.${command}.title`;
 
 const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
@@ -96,7 +94,10 @@ writeTextFileWithLog(
       ],
       keybindings: Object.entries(commandKeybindings).map((
         [command, keybinding],
-      ) => ({ ...keybinding, command: commandToCommandId(command) })),
+      ) => ({
+        ...keybinding,
+        command: commandToCommandId(command as Command),
+      })),
     },
     browser: scriptRelativePath,
     publisher: "narumincho",
