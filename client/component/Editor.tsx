@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 import {
   DocumentWithError,
   ElementValueWithError as ElementValueWithError,
 } from "../../bson/fromBsonBinary.ts";
 import { Controller } from "./Controller.tsx";
-import { type Selection } from "../selection.ts";
+import type { AppState, Selection } from "../appState.ts";
 
 const replace = (
   selection: Selection,
@@ -53,52 +53,44 @@ const replace = (
   }
 };
 
-export const Editor = ({ value, selection, onChange, onChangeSelection }: {
-  readonly value: DocumentWithError;
-  readonly selection: Selection;
+export const Editor = ({ appState, onChange, onSelectionChange }: {
+  readonly appState: AppState;
   readonly onChange: (value: DocumentWithError) => void;
-  readonly onChangeSelection: (selection: Selection) => void;
+  readonly onSelectionChange: (selection: Selection) => void;
 }): React.ReactElement => {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      switch (event.code) {
-        case "Enter":
-          selection;
-      }
-    };
-
-    addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
   return (
     <div>
       <DocumentView
-        value={value}
-        selection={selection}
+        value={appState.document}
+        selection={appState.selection}
+        isTextEdit={appState.isTextEdit}
         onChange={onChange}
-        onSelectionChange={onChangeSelection}
+        onSelectionChange={onSelectionChange}
       />
-      <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
-        <Controller
-          onReplace={(e) => {
-            onChange(replace(selection, e, value));
-          }}
-        />
-      </div>
+      {appState.isTextEdit
+        ? undefined
+        : (
+          <div style={{ position: "fixed", bottom: 0, width: "100%" }}>
+            <Controller
+              onReplace={(e) => {
+                onChange(replace(appState.selection, e, appState.document));
+              }}
+            />
+          </div>
+        )}
     </div>
   );
 };
 
-const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
-  readonly value: DocumentWithError;
-  readonly selection: Selection | undefined;
-  readonly onChange: (value: DocumentWithError) => void;
-  readonly onSelectionChange: (selection: Selection) => void;
-}): React.ReactElement => {
+const DocumentView = (
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
+    readonly value: DocumentWithError;
+    readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
+    readonly onChange: (value: DocumentWithError) => void;
+    readonly onSelectionChange: (selection: Selection) => void;
+  },
+): React.ReactElement => {
   return (
     <div>
       document
@@ -123,6 +115,7 @@ const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
                   selection.childIndex === index
                 ? selection.selection
                 : undefined}
+              isTextEdit={isTextEdit}
               onChange={(element) => {
                 onChange({
                   lastUnsupportedType: value.lastUnsupportedType,
@@ -198,9 +191,10 @@ const DocumentView = ({ value, selection, onChange, onSelectionChange }: {
 };
 
 const ElementViewContainer = (
-  { value, selection, onChange, onSelectionChange }: {
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
     readonly value: ElementValueWithError;
     readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
     readonly onChange: (value: ElementValueWithError) => void;
     readonly onSelectionChange: (selection: Selection) => void;
   },
@@ -221,6 +215,7 @@ const ElementViewContainer = (
       <ElementView
         value={value}
         selection={selection}
+        isTextEdit={isTextEdit}
         onChange={onChange}
         onSelectionChange={onSelectionChange}
       />
@@ -229,13 +224,17 @@ const ElementViewContainer = (
 };
 
 const ElementView = (
-  { value, selection, onChange, onSelectionChange }: {
+  { value, selection, isTextEdit, onChange, onSelectionChange }: {
     readonly value: ElementValueWithError;
     readonly selection: Selection | undefined;
+    readonly isTextEdit: boolean;
     readonly onChange: (value: ElementValueWithError) => void;
     readonly onSelectionChange: (selection: Selection) => void;
   },
 ): React.ReactElement => {
+  if (selection?.type === "self" && isTextEdit) {
+    return <TextEdit initialValue={elementValueWithErrorToText(value)} />;
+  }
   switch (value.type) {
     case "double":
       return (
@@ -260,6 +259,7 @@ const ElementView = (
         <DocumentView
           value={value.value}
           selection={selection}
+          isTextEdit={isTextEdit}
           onChange={(value) => {
             onChange({
               type: "document",
@@ -272,4 +272,56 @@ const ElementView = (
     default:
       return <div>unsupported type</div>;
   }
+};
+
+const elementValueWithErrorToText = (
+  element: ElementValueWithError,
+): string => {
+  switch (element.type) {
+    case "string":
+      return element.value.value;
+    case "double":
+      return `${element.value}`;
+    case "document":
+      return `${
+        JSON.stringify(element.value.value.map((
+          { name, value },
+        ) => [name, elementValueWithErrorToText(value)]))
+      }`;
+    case "int32":
+      return `${element.value}`;
+  }
+};
+
+const TextEdit = ({ initialValue }: { initialValue: string }) => {
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const resize = useCallback(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+      // console.log("Resized:", textarea.scrollHeight, "px");
+    }
+  }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.focus();
+
+    const observer = new ResizeObserver(resize);
+
+    observer.observe(textarea);
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <textarea
+      ref={textareaRef}
+      onInput={resize}
+      defaultValue={initialValue}
+    />
+  );
 };

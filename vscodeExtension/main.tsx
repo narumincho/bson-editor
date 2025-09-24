@@ -12,7 +12,7 @@ import {
   Webview,
   WebviewPanel,
 } from "@narumincho/vscode";
-import { scriptFileName, viewType } from "./lib.ts";
+import { bsonEditorBlur, scriptFileName, viewType } from "./lib.ts";
 import { renderToString } from "react-dom/server";
 import React from "react";
 import { MessageToVsCode } from "../client/vscode.ts";
@@ -33,15 +33,24 @@ export function activate(context: ExtensionContext) {
   const webviewList: Array<{ readonly uri: Uri; readonly webview: Webview }> =
     [];
 
-  registerCommands(vscode, (message) => {
-    vscode.window.showInformationMessage(
-      vscode.window.activeTextEditor?.document.uri.toString() ??
-        "no active editor",
-    );
-    // TODO 対象のエディタのみメッセージを操作するように
-    for (const webView of webviewList) {
-      webView.webview.postMessage(message);
+  registerCommands(vscode, (command) => {
+    const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
+    if (!(activeTab?.input instanceof vscode.TabInputCustom)) {
+      return;
     }
+    if (activeTab.input.viewType !== viewType) {
+      return;
+    }
+    vscode.window.showInformationMessage(
+      `${command} in ${activeTab.input.uri}`,
+    );
+    for (const webView of webviewList) {
+      if (webView.uri.toString() === activeTab.input.uri.toString()) {
+        webView.webview.postMessage({ type: "command", command });
+        return;
+      }
+    }
+    vscode.window.showErrorMessage(`not found: ${activeTab.input.uri}`);
   });
 
   // const watcher = vscode.workspace.createFileSystemWatcher("**/*.bson");
@@ -118,7 +127,7 @@ export function activate(context: ExtensionContext) {
             <script type="module" src={scriptUri.toString()} />
           </head>
           <body>
-            <div id="loading">Bson Editor loading</div>
+            <div id="loading">Bson Editor script loading...</div>
           </body>
         </html>,
       );
@@ -133,6 +142,20 @@ export function activate(context: ExtensionContext) {
               return;
             case "debugShowMessage":
               console.log("Web viewからのメッセージ", message);
+              return;
+            case "focus":
+              vscode.commands.executeCommand(
+                "setContext",
+                bsonEditorBlur,
+                false,
+              );
+              return;
+            case "blur":
+              vscode.commands.executeCommand(
+                "setContext",
+                bsonEditorBlur,
+                true,
+              );
           }
         },
       );
@@ -165,6 +188,10 @@ export function activate(context: ExtensionContext) {
   const provider = vscode.window.registerCustomEditorProvider(
     viewType,
     customEditorProvider,
+    {
+      // supportsMultipleEditorsPerDocument: true,
+      webviewOptions: { enableFindWidget: true },
+    },
   );
   context.subscriptions.push(provider);
 }

@@ -1,10 +1,12 @@
-import { WebviewApi } from "npm:@types/vscode-webview@1.57.5";
+import type { WebviewApi } from "vscode-webview";
+import { Command } from "./command.ts";
 
 export type MessageFromVsCode = {
   readonly type: "initialFile";
   readonly binary: Uint8Array;
 } | {
-  readonly type: "moveToParent";
+  readonly type: "command";
+  readonly command: Command;
 };
 
 export const handleMessageFromVsCode = (
@@ -25,19 +27,14 @@ export type MessageToVsCode = {
 } | {
   readonly type: "debugShowMessage";
   readonly message: string;
+} | {
+  readonly type: "focus";
+} | {
+  readonly type: "blur";
 };
 
 export const sendMessageToVsCode = (message: MessageToVsCode): void => {
-  if (vscodeApi) {
-    vscodeApi.postMessage(message);
-  }
+  vscodeApi.postMessage(message);
 };
 
-export const isInVsCode = (): boolean => {
-  return !!vscodeApi;
-};
-
-const vscodeApi: WebviewApi<unknown> | undefined =
-  typeof globalThis.acquireVsCodeApi === "function"
-    ? globalThis.acquireVsCodeApi()
-    : undefined;
+const vscodeApi: WebviewApi<unknown> = globalThis.acquireVsCodeApi();
