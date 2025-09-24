@@ -34,24 +34,24 @@ export const commandKeybindings: {
   };
 } = {
   moveToParent: {
-    key: "Q",
-    mac: "Q",
-    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+    key: "q",
+    mac: "q",
+    when: `activeCustomEditorId == '${viewType}'`,
   },
   startTextEdit: {
-    key: "Enter",
-    mac: "Enter",
-    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+    key: "enter",
+    mac: "enter",
+    when: `activeCustomEditorId == '${viewType}'`,
   },
   cancelTextEdit: {
-    key: "Escape",
-    mac: "Escape",
-    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+    key: "escape",
+    mac: "escape",
+    when: `activeCustomEditorId == '${viewType}'`,
   },
   confirmTextEdit: {
-    key: "Ctrl+Enter",
-    mac: "Cmd+Enter",
-    when: `editorFocus && activeCustomEditorId == ${viewType}`,
+    key: "ctrl+enter",
+    mac: "cmd+enter",
+    when: `activeCustomEditorId == '${viewType}'`,
   },
 };
 
@@ -60,6 +60,7 @@ export const registerCommands = (
   messageToWebview: (message: MessageFromVsCode) => void,
 ): void => {
   for (const command of commands) {
+    console.log("registerCommand", commandToCommandId(command));
     vscode.commands.registerCommand(commandToCommandId(command), () => {
       messageToWebview({ type: "command", command });
     });
