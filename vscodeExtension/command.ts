@@ -1,6 +1,5 @@
 import { VSCodeAPI } from "@narumincho/vscode";
 import { Command, commands, languages } from "../client/command.ts";
-import { MessageFromVsCode } from "../client/vscode.ts";
 import { bsonEditorBlur, commandToCommandId, viewType } from "./lib.ts";
 
 export const commandTitles: {
@@ -57,12 +56,12 @@ export const commandKeybindings: {
 
 export const registerCommands = (
   vscode: VSCodeAPI,
-  messageToWebview: (message: MessageFromVsCode) => void,
+  messageToWebview: (message: Command) => void,
 ): void => {
   for (const command of commands) {
     console.log("registerCommand", commandToCommandId(command));
     vscode.commands.registerCommand(commandToCommandId(command), () => {
-      messageToWebview({ type: "command", command });
+      messageToWebview(command);
     });
   }
 };

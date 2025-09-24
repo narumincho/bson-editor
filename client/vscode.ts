@@ -34,16 +34,7 @@ export type MessageToVsCode = {
 };
 
 export const sendMessageToVsCode = (message: MessageToVsCode): void => {
-  if (vscodeApi) {
-    vscodeApi.postMessage(message);
-  }
+  vscodeApi.postMessage(message);
 };
 
-export const isInVsCode = (): boolean => {
-  return !!vscodeApi;
-};
-
-const vscodeApi: WebviewApi<unknown> | undefined =
-  typeof globalThis.acquireVsCodeApi === "function"
-    ? globalThis.acquireVsCodeApi()
-    : undefined;
+const vscodeApi: WebviewApi<unknown> = globalThis.acquireVsCodeApi();

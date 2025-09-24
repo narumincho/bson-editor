@@ -33,7 +33,7 @@ export function activate(context: ExtensionContext) {
   const webviewList: Array<{ readonly uri: Uri; readonly webview: Webview }> =
     [];
 
-  registerCommands(vscode, (message) => {
+  registerCommands(vscode, (command) => {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
     if (!(activeTab?.input instanceof vscode.TabInputCustom)) {
       return;
@@ -41,14 +41,16 @@ export function activate(context: ExtensionContext) {
     if (activeTab.input.viewType !== viewType) {
       return;
     }
-    vscode.window.showInformationMessage(`search: ${activeTab.input.uri}`);
+    vscode.window.showInformationMessage(
+      `${command} in ${activeTab.input.uri}`,
+    );
     for (const webView of webviewList) {
       if (webView.uri.toString() === activeTab.input.uri.toString()) {
-        webView.webview.postMessage(message);
+        webView.webview.postMessage({ type: "command", command });
         return;
       }
     }
-    vscode.window.showInformationMessage(`not found: ${activeTab.input.uri}`);
+    vscode.window.showErrorMessage(`not found: ${activeTab.input.uri}`);
   });
 
   // const watcher = vscode.workspace.createFileSystemWatcher("**/*.bson");
