@@ -1,7 +1,7 @@
 import { VSCodeAPI } from "@narumincho/vscode";
 import { Command, commands, languages } from "../client/command.ts";
 import { MessageFromVsCode } from "../client/vscode.ts";
-import { commandToCommandId, viewType } from "./lib.ts";
+import { bsonEditorBlur, commandToCommandId, viewType } from "./lib.ts";
 
 export const commandTitles: {
   readonly [key in Command]: {
@@ -36,22 +36,22 @@ export const commandKeybindings: {
   moveToParent: {
     key: "q",
     mac: "q",
-    when: `activeCustomEditorId == '${viewType}'`,
+    when: `activeCustomEditorId == ${viewType} && !${bsonEditorBlur}`,
   },
   startTextEdit: {
     key: "enter",
     mac: "enter",
-    when: `activeCustomEditorId == '${viewType}'`,
+    when: `activeCustomEditorId == ${viewType} && !${bsonEditorBlur}`,
   },
   cancelTextEdit: {
     key: "escape",
     mac: "escape",
-    when: `activeCustomEditorId == '${viewType}'`,
+    when: `activeCustomEditorId == ${viewType} && !${bsonEditorBlur}`,
   },
   confirmTextEdit: {
     key: "ctrl+enter",
     mac: "cmd+enter",
-    when: `activeCustomEditorId == '${viewType}'`,
+    when: `activeCustomEditorId == ${viewType} && !${bsonEditorBlur}`,
   },
 };
 

@@ -36,6 +36,22 @@ const App = (): React.ReactElement => {
     });
   }, [appState]);
 
+  useEffect(() => {
+    const focus = () => {
+      sendMessageToVsCode({ type: "focus" });
+    };
+    const blur = () => {
+      sendMessageToVsCode({ type: "blur" });
+    };
+    addEventListener("focus", focus);
+    addEventListener("blur", blur);
+
+    return () => {
+      removeEventListener("focus", focus);
+      removeEventListener("blur", blur);
+    };
+  }, []);
+
   const handleChange = useCallback((document: DocumentWithError): void => {
     setAppState((prev) => (prev ? { ...prev, document } : undefined));
   }, []);

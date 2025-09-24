@@ -12,7 +12,7 @@ import {
   Webview,
   WebviewPanel,
 } from "@narumincho/vscode";
-import { scriptFileName, viewType } from "./lib.ts";
+import { bsonEditorBlur, scriptFileName, viewType } from "./lib.ts";
 import { renderToString } from "react-dom/server";
 import React from "react";
 import { MessageToVsCode } from "../client/vscode.ts";
@@ -140,6 +140,20 @@ export function activate(context: ExtensionContext) {
               return;
             case "debugShowMessage":
               console.log("Web viewからのメッセージ", message);
+              return;
+            case "focus":
+              vscode.commands.executeCommand(
+                "setContext",
+                bsonEditorBlur,
+                false,
+              );
+              return;
+            case "blur":
+              vscode.commands.executeCommand(
+                "setContext",
+                bsonEditorBlur,
+                true,
+              );
           }
         },
       );

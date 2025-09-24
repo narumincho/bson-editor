@@ -27,6 +27,10 @@ export type MessageToVsCode = {
 } | {
   readonly type: "debugShowMessage";
   readonly message: string;
+} | {
+  readonly type: "focus";
+} | {
+  readonly type: "blur";
 };
 
 export const sendMessageToVsCode = (message: MessageToVsCode): void => {
