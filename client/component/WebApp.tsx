@@ -28,6 +28,18 @@ export const WebApp = (): React.ReactElement => {
           appState,
         }));
       }
+      if (event.code === "Escape") {
+        setAppState(handleCommand({
+          command: "cancelTextEdit",
+          appState,
+        }));
+      }
+      if (event.ctrlKey && event.code === "Enter") {
+        setAppState(handleCommand({
+          command: "confirmTextEdit",
+          appState,
+        }));
+      }
     };
     addEventListener("keydown", keydownHandler);
 
