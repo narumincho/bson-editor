@@ -60,12 +60,18 @@ export const Editor = ({ appState, onChange, onSelectionChange }: {
 }): React.ReactElement => {
   return (
     <div>
-      <DocumentView
-        value={appState.document}
+      <ElementViewContainer
+        value={{ type: "document", value: appState.document }}
         selection={appState.selection}
         isTextEdit={appState.isTextEdit}
-        onChange={onChange}
-        onSelectionChange={onSelectionChange}
+        onChange={(element) => {
+          if (element.type === "document") {
+            onChange(element.value);
+          }
+        }}
+        onSelectionChange={(selection) => {
+          onSelectionChange(selection);
+        }}
       />
       {appState.isTextEdit
         ? undefined
@@ -205,12 +211,10 @@ const ElementViewContainer = (
         e.stopPropagation();
         onSelectionChange({ type: "self" });
       }}
-      style={selection?.type === "self"
-        ? {
-          outline: "skyblue",
-          outlineStyle: "solid",
-        }
-        : {}}
+      style={{
+        borderColor: selection?.type === "self" ? "skyblue" : "transparent",
+        borderStyle: "solid",
+      }}
     >
       <ElementView
         value={value}
