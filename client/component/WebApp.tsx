@@ -10,7 +10,7 @@ export const WebApp = (): React.ReactElement => {
   const [appState, setAppState] = useState<AppState>({
     document: { value: [], lastUnsupportedType: undefined },
     selection: { type: "self" },
-    isTextEdit: false,
+    textEditModeText: undefined,
   });
 
   useEffect(() => {
@@ -56,7 +56,14 @@ export const WebApp = (): React.ReactElement => {
     setAppState((prev) => ({
       document: prev.document,
       selection,
-      isTextEdit: false,
+      textEditModeText: undefined,
+    }));
+  }, []);
+
+  const handleChangeText = useCallback((value: string) => {
+    setAppState((prev) => ({
+      ...prev,
+      textEditModeText: value,
     }));
   }, []);
 
@@ -67,6 +74,7 @@ export const WebApp = (): React.ReactElement => {
         appState={appState}
         onChange={handleChange}
         onSelectionChange={handleChangeSelection}
+        onChangeText={handleChangeText}
       />
     </div>
   );

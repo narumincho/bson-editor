@@ -3,6 +3,7 @@ import { ensureFile } from "@std/fs";
 import { commandToCommandId, scriptFileName, viewType } from "./lib.ts";
 import { Command, commands, languages } from "../client/command.ts";
 import { commandKeybindings, commandTitles } from "./command.ts";
+import { jsonValueToJsonString } from "../client/json.ts";
 
 export const writeTextFileWithLog = async (
   path: URL,
@@ -56,7 +57,7 @@ const placeHolderUse = (palaceHolder: string) => `%${palaceHolder}%`;
 
 writeTextFileWithLog(
   new URL("./package.json", distributionPath),
-  JSON.stringify({
+  jsonValueToJsonString({
     name: "bson-editor",
     version: "0.0.1",
     description: "bson editor VSCode extension",
@@ -107,7 +108,7 @@ writeTextFileWithLog(
 const defaultLanguage = "en";
 
 for (const language of languages) {
-  const content = JSON.stringify(Object.fromEntries(
+  const content = jsonValueToJsonString(Object.fromEntries(
     Object.entries(commandTitles).map(([command, title]) => [
       commandTitlePlaceHolder(command),
       title[language],
