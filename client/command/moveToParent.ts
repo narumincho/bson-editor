@@ -2,7 +2,7 @@ import type { HandleCommand } from "./type.ts";
 import type { Selection } from "../appState.ts";
 
 export const moveToParent: HandleCommand = (appState) => {
-  if (appState.isTextEdit) {
+  if (appState.textEditModeText) {
     return appState;
   }
   return { ...appState, selection: moveToParentLoop(appState.selection) };

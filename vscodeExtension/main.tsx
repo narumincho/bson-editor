@@ -41,9 +41,6 @@ export function activate(context: ExtensionContext) {
     if (activeTab.input.viewType !== viewType) {
       return;
     }
-    vscode.window.showInformationMessage(
-      `${command} in ${activeTab.input.uri}`,
-    );
     for (const webView of webviewList) {
       if (webView.uri.toString() === activeTab.input.uri.toString()) {
         webView.webview.postMessage({ type: "command", command });
@@ -141,6 +138,10 @@ export function activate(context: ExtensionContext) {
               });
               return;
             case "debugShowMessage":
+              vscode.window.showInformationMessage(
+                `viewからのメッセージ: ${message.message}`,
+              );
+
               console.log("Web viewからのメッセージ", message);
               return;
             case "focus":

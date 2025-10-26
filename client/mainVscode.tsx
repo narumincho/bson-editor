@@ -20,7 +20,7 @@ const App = (): React.ReactElement => {
           setAppState({
             document: fromBsonBinary(message.binary),
             selection: { type: "self" },
-            isTextEdit: false,
+            textEditModeText: undefined,
           });
           sendMessageToVsCode({
             type: "debugShowMessage",
@@ -29,6 +29,10 @@ const App = (): React.ReactElement => {
           return;
         case "command":
           if (appState) {
+            sendMessageToVsCode({
+              type: "debugShowMessage",
+              message: `コマンドを受け取ったよ ${message.command}`,
+            });
             setAppState(handleCommand({ command: message.command, appState }));
           }
           return;
@@ -60,6 +64,12 @@ const App = (): React.ReactElement => {
     setAppState((prev) => (prev ? { ...prev, selection } : undefined));
   }, []);
 
+  const handleChangeText = useCallback((text: string) => {
+    setAppState((
+      prev,
+    ) => (prev ? { ...prev, textEditModeText: text } : undefined));
+  }, []);
+
   if (appState === undefined) {
     return <div>Loading...</div>;
   }
@@ -69,6 +79,7 @@ const App = (): React.ReactElement => {
       appState={appState}
       onChange={handleChange}
       onSelectionChange={handleChangeSelection}
+      onChangeText={handleChangeText}
     />
   );
 };
