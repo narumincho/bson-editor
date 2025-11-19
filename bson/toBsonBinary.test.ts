@@ -1,11 +1,11 @@
 import { serialize } from "bson";
 import { assertEquals } from "@std/assert";
-import { Element, ToBsonBinary } from "./toBsonBinary.ts";
+import { Element, toBsonBinary } from "./toBsonBinary.ts";
 
 Deno.test("empty", () => {
   const expected = new Uint8Array([5, 0, 0, 0, 0]);
   assertEquals(serialize({}), expected);
-  assertEquals(ToBsonBinary(new Map()), expected);
+  assertEquals(toBsonBinary(new Map()), expected);
 });
 
 Deno.test("string and number", () => {
@@ -120,7 +120,7 @@ Deno.test("string and number", () => {
     expected,
   );
   assertEquals(
-    ToBsonBinary(
+    toBsonBinary(
       new Map<string, Element>([
         ["sample", { type: "string", value: "サンプルテキスト" }],
         ["number", { type: "double", value: 12.34 }],
@@ -171,7 +171,7 @@ Deno.test("document in document", () => {
     expected,
   );
   assertEquals(
-    ToBsonBinary(
+    toBsonBinary(
       new Map([
         [
           "doc",

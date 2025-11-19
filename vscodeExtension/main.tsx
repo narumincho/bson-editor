@@ -30,6 +30,9 @@ export function activate(context: ExtensionContext) {
     CustomDocumentContentChangeEvent<BsonEditorDocument>
   >();
 
+  // pending resolvers for save requests from the extension to the webview
+  const pendingFileRequests = new Map<string, (binary: Uint8Array) => void>();
+
   const webviewList: Array<{ readonly uri: Uri; readonly webview: Webview }> =
     [];
 
@@ -157,6 +160,19 @@ export function activate(context: ExtensionContext) {
                 bsonEditorBlur,
                 true,
               );
+              return;
+            case "fileForSave":
+              // webview replied with current binary for saving
+              {
+                const resolver = pendingFileRequests.get(
+                  document.uri.toString(),
+                );
+                if (resolver) {
+                  pendingFileRequests.delete(document.uri.toString());
+                  resolver(message.binary);
+                }
+              }
+              return;
           }
         },
       );
@@ -166,17 +182,64 @@ export function activate(context: ExtensionContext) {
       document: BsonEditorDocument,
       _cancellation: CancellationToken,
     ): Promise<void> => {
-      await vscode.workspace.fs.writeFile(
-        document.uri,
-        document.originalBinary,
+      // request current content from webview then write
+      const webview = webviewList.find((e) =>
+        e.uri.toString() === document.uri.toString()
       );
+      if (webview === undefined) {
+        // fallback to existing binary
+        await vscode.workspace.fs.writeFile(
+          document.uri,
+          document.originalBinary,
+        );
+        return;
+      }
+      const timeoutMs = 2000;
+      const fileBinary: Uint8Array = await new Promise<Uint8Array>(
+        (resolve, reject) => {
+          const key = document.uri.toString();
+          pendingFileRequests.set(key, (binary) => resolve(binary));
+          webview.webview.postMessage({ type: "requestFileForSave" });
+          setTimeout(() => {
+            if (pendingFileRequests.has(key)) {
+              pendingFileRequests.delete(key);
+              reject(new Error("timeout waiting for webview fileForSave"));
+            }
+          }, timeoutMs);
+        },
+      ).catch(() => document.originalBinary);
+      await vscode.workspace.fs.writeFile(document.uri, fileBinary);
     },
     saveCustomDocumentAs: async (
       document: BsonEditorDocument,
       destination: Uri,
       _cancellation: CancellationToken,
     ): Promise<void> => {
-      await vscode.workspace.fs.writeFile(destination, document.originalBinary);
+      const webview = webviewList.find((e) =>
+        e.uri.toString() === document.uri.toString()
+      );
+      if (webview === undefined) {
+        await vscode.workspace.fs.writeFile(
+          destination,
+          document.originalBinary,
+        );
+        return;
+      }
+      const timeoutMs = 2000;
+      const fileBinary: Uint8Array = await new Promise<Uint8Array>(
+        (resolve, reject) => {
+          const key = document.uri.toString();
+          pendingFileRequests.set(key, (binary) => resolve(binary));
+          webview.webview.postMessage({ type: "requestFileForSave" });
+          setTimeout(() => {
+            if (pendingFileRequests.has(key)) {
+              pendingFileRequests.delete(key);
+              reject(new Error("timeout waiting for webview fileForSave"));
+            }
+          }, timeoutMs);
+        },
+      ).catch(() => document.originalBinary);
+      await vscode.workspace.fs.writeFile(destination, fileBinary);
     },
     revertCustomDocument: async (
       document: BsonEditorDocument,

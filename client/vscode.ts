@@ -7,6 +7,8 @@ export type MessageFromVsCode = {
 } | {
   readonly type: "command";
   readonly command: Command;
+} | {
+  readonly type: "requestFileForSave";
 };
 
 export const handleMessageFromVsCode = (
@@ -31,6 +33,9 @@ export type MessageToVsCode = {
   readonly type: "focus";
 } | {
   readonly type: "blur";
+} | {
+  readonly type: "fileForSave";
+  readonly binary: Uint8Array;
 };
 
 export const sendMessageToVsCode = (message: MessageToVsCode): void => {

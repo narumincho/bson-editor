@@ -1,5 +1,9 @@
 /**
- * https://www.npmjs.com/package/bson から Node.js への依存をなくして, 型を強化した bson ライブラリ
+ * https://www.npmjs.com/package/bson から
+ * - Node.js への依存をなくす
+ * - 型を強化
+ * - エラーも扱える
+ * ようにした bson ライブラリ
  *
  * @module
  */

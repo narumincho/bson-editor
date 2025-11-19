@@ -9,9 +9,12 @@ export type Element = {
 } | {
   readonly type: "document";
   readonly value: Document;
+} | {
+  readonly type: "int32";
+  readonly value: number;
 };
 
-export const ToBsonBinary = (document: Document): Uint8Array => {
+export const toBsonBinary = (document: Document): Uint8Array => {
   return new Uint8Array(documentToBsonBinary(document));
 };
 
@@ -46,6 +49,11 @@ const elementToBsonBinary = (
       return {
         type: 0x02,
         value: stringToBsonString(element.value),
+      };
+    case "int32":
+      return {
+        type: 0x10,
+        value: int32ToBsonBinary(element.value),
       };
     case "document":
       return {
